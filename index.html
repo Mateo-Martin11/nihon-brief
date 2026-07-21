@@ -93,7 +93,7 @@
   /* Regle 9 et 99 : on respecte le reglage systeme de reduction des animations. */
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
-                         transition-duration:.01ms!important;scroll-behavior:auto!important}
+                         transition-duration:.01ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
   }
 
   /* --- matiere ----------------------------------------------------------
@@ -111,13 +111,23 @@
   .rv-fly-l{transition:transform .34s ease-in,opacity .34s;transform:translate(-130vw,-8vh) rotate(-22deg)!important;opacity:0}
   .rv-back{transition:transform .3s cubic-bezier(.2,1.5,.4,1)}
   @keyframes rvIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
-  @keyframes bkIn{from{transform:perspective(1200px) rotateY(16deg);opacity:.35}to{transform:none;opacity:1}}
+  /* Sequence d'ouverture : le livre monte doucement, respire un instant,
+     puis la couverture s'ouvre lentement (delai .4s, courbe posee). */
+  @keyframes bkRise{from{opacity:0;transform:translateY(22px) scale(.955)}to{opacity:1;transform:none}}
+  /* papier du carnet : creme + grain leger, comme le fond de l'app */
+  .bk-paper{background:#fbfaf5 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .03 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .bk-book{animation:bkRise .55s cubic-bezier(.2,.85,.3,1) both}
+  /* Tourne de page : angle faible et fondu croise, jamais de claquement.
+     Deux sens — la page entre du cote d'ou l'on vient. */
+  @keyframes bkInL{from{transform:perspective(1400px) rotateY(7deg) translateX(10px);opacity:0}to{transform:none;opacity:1}}
+  @keyframes bkInR{from{transform:perspective(1400px) rotateY(-7deg) translateX(-10px);opacity:0}to{transform:none;opacity:1}}
   .bk-page{transform-origin:left center;backface-visibility:hidden}
-  .bk-turn-out{transition:transform .3s ease-in,opacity .3s;transform:perspective(1200px) rotateY(-76deg);opacity:.1}
+  .bk-turn-out{transition:transform .34s cubic-bezier(.55,0,.75,.4),opacity .3s;transform:perspective(1400px) rotateY(-34deg);opacity:0}
+  .bk-turn-out-r{transform-origin:right center;transition:transform .34s cubic-bezier(.55,0,.75,.4),opacity .3s;transform:perspective(1400px) rotateY(34deg);opacity:0}
   /* La couverture pivote opaque et disparait par sa tranche (backface) —
      un fondu pendant la rotation ferait un effet fantome. */
-  .bk-cover{transform-origin:left center;transition:transform .95s cubic-bezier(.65,.05,.25,1);backface-visibility:hidden}
-  .bk-cover.open{transform:perspective(1500px) rotateY(-152deg);pointer-events:none}
+  .bk-cover{transform-origin:left center;transition:transform 1.2s cubic-bezier(.72,0,.2,1) .4s;backface-visibility:hidden}
+  .bk-cover.open{transform:perspective(1700px) rotateY(-165deg);pointer-events:none}
   .vtx{writing-mode:vertical-rl}
   .kbd-hint{text-align:center;padding:0 0 12px;font:600 10.5px 'Hanken Grotesk';letter-spacing:.12em;color:#8f8a7e}
   @media (hover:none){.kbd-hint{display:none}}
@@ -366,7 +376,7 @@ const CHEV_R = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stro
 
 function tplVocab(it){
   return `<div style="padding:19px 52px 15px;text-align:center;position:relative;flex:1;display:flex;flex-direction:column;justify-content:center">
-      <div aria-hidden="true" style="position:absolute;top:12px;left:12px;width:30px;height:30px;border-radius:50%;border:2.5px solid ${it.color};background:#fff;color:#111;font:900 14px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
+      <div aria-hidden="true" style="position:absolute;top:13px;left:13px;width:29px;height:29px;border-radius:9px;background:${it.color};color:#fff;font:900 16px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
       ${it.hasKana ? `<div style="font:500 12.5px 'Noto Sans JP';color:#777267;letter-spacing:.07em;margin-bottom:5px">${esc(it.kana)}</div>` : ''}
       <div style="font:700 27px 'Noto Sans JP';color:#111;line-height:1.2;letter-spacing:.01em">${esc(it.jp)}</div>
       ${it.showRomaji ? `<div style="font:700 13px 'Hanken Grotesk';letter-spacing:.15em;text-transform:uppercase;color:${it.color};margin-top:7px">${esc(it.romaji)}</div>` : ''}
@@ -379,7 +389,7 @@ function tplVocab(it){
 
 function tplHybrid(it){
   return `<div style="padding:15px 44px 15px 16px;display:flex;gap:13px;flex:1">
-      <div aria-hidden="true" style="flex:none;width:32px;height:32px;border-radius:50%;border:2.5px solid ${it.color};background:#fff;color:#111;font:900 15px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
+      <div aria-hidden="true" style="flex:none;width:33px;height:33px;border-radius:9px;background:${it.color};color:#fff;font:900 18px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px">
           <span style="font:700 19px 'Noto Sans JP';color:#111">${esc(it.jp)}</span>
@@ -393,7 +403,7 @@ function tplHybrid(it){
 
 function tplPlain(it){
   return `<div style="padding:15px 44px 15px 16px;display:flex;gap:13px;flex:1">
-      <div aria-hidden="true" style="flex:none;width:32px;height:32px;border-radius:50%;border:2.5px solid ${it.color};background:#fff;color:#111;font:900 15px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
+      <div aria-hidden="true" style="flex:none;width:33px;height:33px;border-radius:9px;background:${it.color};color:#fff;font:900 18px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
           <span style="font:700 10.5px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:${it.color}">${esc(it.catName)}</span>
@@ -459,11 +469,9 @@ function render(){
                     ...CATS.map(([n,k,c]) => ({key:n,label:n,kanji:k,ink:CAT_MAP[n].ink}))]
     .map(c => {
       const active = cat === c.key;
-      // pastille de ligne de metro : cercle cercle de la couleur, kanji noir ;
-      // actif = pastille remplie + bord noir. La couleur ne vit que dans l'anneau.
-      return `<button type="button" class="hit" data-cat="${esc(c.key)}" aria-pressed="${active}" style="flex:none;display:flex;align-items:center;gap:8px;border-radius:999px;padding:4px 13px 4px 5px;cursor:pointer;background:#fff;border:1.5px solid ${active?'#141414':'#e2dfd6'};transition:border-color .15s">
-        <span aria-hidden="true" style="width:26px;height:26px;border-radius:50%;border:2.5px solid ${c.ink};background:${active?c.ink:'#fff'};color:${active?'#fff':'#111'};font:900 13px 'Noto Sans JP';display:grid;place-items:center">${esc(c.kanji)}</span>
-        <span style="font:${active?800:600} 12.5px 'Hanken Grotesk';color:#1a1a1a">${esc(c.label)}</span>
+      return `<button type="button" class="hit" data-cat="${esc(c.key)}" aria-pressed="${active}" style="flex:none;display:flex;align-items:center;gap:7px;border-radius:999px;padding:5px 12px 5px 6px;cursor:pointer;background:${active?'#141414':'#fff'};border:1.5px solid ${active?'#141414':'#e6e3db'};transition:background .15s">
+        <span aria-hidden="true" style="width:24px;height:24px;border-radius:7px;background:${c.ink};color:#fff;font:900 14px 'Noto Sans JP';display:grid;place-items:center">${esc(c.kanji)}</span>
+        <span style="font:700 12.5px 'Hanken Grotesk';color:${active?'#fff':'#3a372f'}">${esc(c.label)}</span>
       </button>`;
     }).join('');
 
@@ -627,7 +635,7 @@ function reviewAct(action){
 function tplRvInner(d, revealed){
   const cm = CAT_MAP[d.cat] || {kanji:'?', ink:'#5c5c5c'};
   const ts = TONE_STYLES[d.tone];
-  const head = `<div style="display:flex;justify-content:center;margin-bottom:16px"><span style="display:inline-flex;align-items:center;gap:8px"><span aria-hidden="true" style="width:28px;height:28px;border-radius:50%;border:2.5px solid ${cm.ink};background:#fff;color:#111;font:900 13px 'Noto Sans JP';display:grid;place-items:center">${esc(cm.kanji)}</span><span style="font:700 11px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:${cm.ink}">${esc(d.cat)}</span></span></div>`;
+  const head = `<div style="display:flex;justify-content:center;margin-bottom:16px"><span style="display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="width:26px;height:26px;border-radius:8px;background:${cm.ink};color:#fff;font:900 14px 'Noto Sans JP';display:grid;place-items:center">${esc(cm.kanji)}</span><span style="font:700 11px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:${cm.ink}">${esc(d.cat)}</span></span></div>`;
   let front;
   if (d.jp) {
     front = `${d.kana ? `<div style="font:500 15px 'Noto Sans JP';color:#777267;letter-spacing:.06em;margin-bottom:8px">${esc(d.kana)}</div>` : ''}
@@ -692,14 +700,23 @@ function tplReview(){
         ${tplRvInner(d, r.revealed)}
       </div>
     </div>
-    <div style="display:flex;justify-content:center;align-items:center;gap:16px;padding:16px 20px 10px">
-      <button type="button" id="rv-again-btn" class="hit" aria-label="À revoir plus tard" style="width:54px;height:54px;border-radius:50%;cursor:pointer;background:#fff;display:grid;place-items:center">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#957100" stroke-width="2.4" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.3"/><path d="M3 2v5h5"/></svg>
-      </button>
-      <button type="button" id="rv-reveal" class="hit" aria-label="Révéler la réponse" ${r.revealed ? 'disabled' : ''} style="height:54px;padding:0 24px;border-radius:27px;cursor:pointer;background:#2b2b2b;color:#fff;font:800 13px 'Hanken Grotesk';letter-spacing:.06em;${r.revealed ? 'opacity:.45;cursor:default' : ''}">${r.revealed ? 'RÉVÉLÉ' : 'RÉVÉLER'}</button>
-      <button type="button" id="rv-know" class="hit" aria-label="Je savais — tamponner" style="width:54px;height:54px;border-radius:50%;cursor:pointer;background:#E60012;color:#fff;font:900 20px 'Noto Sans JP';display:grid;place-items:center">済</button>
+    <div style="display:flex;justify-content:center;align-items:flex-start;gap:22px;padding:16px 20px 8px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <button type="button" id="rv-again-btn" class="hit" aria-label="À revoir plus tard" style="width:54px;height:54px;border-radius:50%;cursor:pointer;background:#fff;display:grid;place-items:center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#957100" stroke-width="2.4" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.3"/><path d="M3 2v5h5"/></svg>
+        </button>
+        <span aria-hidden="true" style="font:700 9.5px 'Hanken Grotesk';letter-spacing:.14em;color:#a5a094">À REVOIR</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <button type="button" id="rv-reveal" class="hit" aria-label="Révéler la réponse" ${r.revealed ? 'disabled' : ''} style="height:54px;padding:0 24px;border-radius:27px;cursor:pointer;background:#2b2b2b;color:#fff;font:800 13px 'Hanken Grotesk';letter-spacing:.06em;${r.revealed ? 'opacity:.45;cursor:default' : ''}">${r.revealed ? 'RÉVÉLÉ' : 'RÉVÉLER'}</button>
+        <span aria-hidden="true" style="font:700 9.5px 'Hanken Grotesk';letter-spacing:.14em;color:#a5a094">LA RÉPONSE</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <button type="button" id="rv-know" class="hit" aria-label="Je savais — tamponner" style="width:54px;height:54px;border-radius:50%;cursor:pointer;background:#E60012;color:#fff;font:900 20px 'Noto Sans JP';display:grid;place-items:center">済</button>
+        <span aria-hidden="true" style="font:700 9.5px 'Hanken Grotesk';letter-spacing:.14em;color:#a5a094">JE SAVAIS</span>
+      </div>
     </div>
-    <div class="kbd-hint">← À REVOIR · ESPACE RÉVÉLER · → JE SAVAIS</div>
+    <div class="kbd-hint">← À REVOIR · ESPACE RÉVÉLER · → JE SAVAIS · GLISSE LA CARTE</div>
     <span class="sr-only" aria-live="polite">${remain} fiche${remain > 1 ? 's' : ''} restante${remain > 1 ? 's' : ''}. ${esc(d.jp || d.title)}</span>
   </div>`;
 }
@@ -755,7 +772,7 @@ function openBook(){
   // double rAF : la couverture doit etre peinte fermee avant de s'ouvrir
   requestAnimationFrame(() => requestAnimationFrame(() => {
     document.getElementById('bk-cover')?.classList.add('open');
-    setTimeout(() => { if (state.book) state.book.opened = true; }, 1000);
+    setTimeout(() => { if (state.book) state.book.opened = true; }, 1700);
   }));
 }
 
@@ -773,11 +790,12 @@ function bookTurn(dir){
   if (np < 0) np = 0;
   if (np > lastStart(N) || np === b.page) return;
   b.opened = true;
+  b.lastDir = dir;   // la page entrante arrive du cote d'ou l'on vient
   const el = document.getElementById('bk-page');
   const rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (el && !rm) {
-    el.classList.add('bk-turn-out');
-    setTimeout(() => { if (state.book) { state.book.page = np; renderOverlays(); } }, 280);
+    el.classList.add(dir > 0 ? 'bk-turn-out' : 'bk-turn-out-r');
+    setTimeout(() => { if (state.book) { state.book.page = np; renderOverlays(); } }, 320);
   } else {
     b.page = np; renderOverlays();
   }
@@ -848,12 +866,17 @@ function tplBook(){
     <div aria-hidden="true" style="position:absolute;bottom:22px;right:22px;width:40px;height:40px;border-radius:8px;background:#C6002B;color:#fff;display:grid;place-items:center;font:900 20px 'Noto Sans JP';transform:rotate(-6deg);filter:url(#ink)">済</div>
   </div>`;
 
+  const inAnim = (b.lastDir || 1) > 0 ? 'bkInL' : 'bkInR';
   return `<div class="ov ov-book" role="dialog" aria-modal="true" aria-label="Carnet de tampons" style="align-items:center;justify-content:center">
     <button type="button" id="bk-close" data-autofocus class="hit" aria-label="Fermer le carnet" style="position:absolute;top:12px;right:12px;width:44px;height:44px;cursor:pointer;color:#fff;font:700 16px 'Hanken Grotesk'">✕</button>
-    <div style="perspective:1500px">
-      <div data-pageswipe style="position:relative;${dims};background:#fbfaf5;border-radius:6px 14px 14px 6px;box-shadow:0 30px 70px rgba(0,0,0,.55),inset 9px 0 16px -9px rgba(30,26,20,.28);overflow:hidden;touch-action:pan-y">
-        <div class="bk-page" id="bk-page" style="position:absolute;inset:0;${spread ? 'display:flex;' : 'padding:20px 18px;'}animation:bkIn .3s ease both">${faces}</div>
-        ${cover}
+    <div class="${b.opened ? '' : 'bk-book'}" style="perspective:1600px">
+      <div data-pageswipe class="bk-paper" style="position:relative;${dims};border-radius:6px 14px 14px 6px;box-shadow:0 30px 70px rgba(0,0,0,.55),inset 9px 0 16px -9px rgba(30,26,20,.28);touch-action:pan-y">
+        <!-- tranche : l'epaisseur des pages empilees, visible a droite -->
+        <div aria-hidden="true" style="position:absolute;top:5px;bottom:5px;right:-6px;width:6px;background:repeating-linear-gradient(90deg,#e6e2d4 0 1px,#f7f4ea 1px 2.2px);border-radius:0 3px 3px 0;box-shadow:1px 0 3px rgba(30,26,20,.25)"></div>
+        <div style="position:absolute;inset:0;border-radius:6px 14px 14px 6px;overflow:hidden">
+          <div class="bk-page" id="bk-page" style="position:absolute;inset:0;${spread ? 'display:flex;' : 'padding:20px 18px;'}animation:${inAnim} .38s cubic-bezier(.25,.8,.3,1) both">${faces}</div>
+          ${cover}
+        </div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:18px;margin-top:16px">
