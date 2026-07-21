@@ -619,6 +619,20 @@ function reviewCard(){
   return DATA.find(d => d.id === r.deck[r.i]);
 }
 
+/* Boutons et clavier passent par le meme vol de carte que le swipe : elle
+   part a droite pour « je savais », a gauche pour « a revoir », badge allume. */
+function flyAndAct(action){
+  const card = document.getElementById('rv-card');
+  const rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!card || rm) return reviewAct(action);
+  if (card.dataset.flying) return;   // ignore un second declenchement en plein vol
+  card.dataset.flying = '1';
+  const hint = card.querySelector(action === 'know' ? '[data-hint-r]' : '[data-hint-l]');
+  if (hint) hint.style.opacity = 1;
+  card.classList.add(action === 'know' ? 'rv-fly-r' : 'rv-fly-l');
+  setTimeout(() => reviewAct(action), 300);
+}
+
 function reviewAct(action){
   const r = state.review, d = reviewCard();
   if (!d) return;
@@ -930,8 +944,8 @@ function wireOverlays(){
     if (e.target.closest('#rv-close,#rv-close2,#rv-close3,#bk-close')) return closeOverlays();
     if (e.target.closest('#rv-restart'))  return openReview();
     if (e.target.closest('#rv-reveal') && !e.target.closest('#rv-reveal').disabled) { state.review.revealed = true; return renderOverlays(); }
-    if (e.target.closest('#rv-know'))     return reviewAct('know');
-    if (e.target.closest('#rv-again-btn')) return reviewAct('again');
+    if (e.target.closest('#rv-know'))     return flyAndAct('know');
+    if (e.target.closest('#rv-again-btn')) return flyAndAct('again');
     const nx = e.target.closest('#bk-next'), pv = e.target.closest('#bk-prev');
     if (nx && !nx.disabled) return bookTurn(1);
     if (pv && !pv.disabled) return bookTurn(-1);
@@ -999,8 +1013,8 @@ function wireOverlays(){
     trapTab(e, dlg);
     if (state.review) {
       if (e.key === ' ')           { e.preventDefault(); if (reviewCard() && !state.review.revealed) { state.review.revealed = true; renderOverlays(); } }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); if (reviewCard()) reviewAct('know'); }
-      else if (e.key === 'ArrowLeft')  { e.preventDefault(); if (reviewCard()) reviewAct('again'); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); if (reviewCard()) flyAndAct('know'); }
+      else if (e.key === 'ArrowLeft')  { e.preventDefault(); if (reviewCard()) flyAndAct('again'); }
     } else if (state.book) {
       if (e.key === 'ArrowRight') { e.preventDefault(); bookTurn(1); }
       if (e.key === 'ArrowLeft')  { e.preventDefault(); bookTurn(-1); }
