@@ -110,7 +110,9 @@
   .rv-fly-r{transition:transform .34s ease-in,opacity .34s;transform:translate(130vw,-8vh) rotate(22deg)!important;opacity:0}
   .rv-fly-l{transition:transform .34s ease-in,opacity .34s;transform:translate(-130vw,-8vh) rotate(-22deg)!important;opacity:0}
   .rv-back{transition:transform .3s cubic-bezier(.2,1.5,.4,1)}
-  @keyframes rvIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+  /* L'entree de la carte part de la pose EXACTE du premier fantome (12px,
+     .966) : la carte suivante semble monter de la pile plutot qu'apparaitre. */
+  @keyframes rvIn{from{opacity:.55;transform:translateY(12px) scale(.966)}to{opacity:1;transform:none}}
   /* Sequence d'ouverture : le livre monte doucement, respire un instant,
      puis la couverture s'ouvre lentement (delai .4s, courbe posee). */
   @keyframes bkRise{from{opacity:0;transform:translateY(22px) scale(.955)}to{opacity:1;transform:none}}
@@ -134,9 +136,10 @@
 
   /* --- desktop : la revision s'agrandit, le carnet passe en double page.
      En dessous de 900px rien ne change : le mobile est deja au point. */
+  #rv-stack{width:min(88vw,420px)}
   @media (min-width:900px){
-    #rv-card{width:min(64vw,560px)!important;padding:44px 48px 40px!important}
-    .rv-ghost{width:min(60vw,540px)!important;height:340px!important}
+    #rv-stack{width:min(64vw,560px)}
+    #rv-card{padding:44px 48px 40px!important}
     #rv-card .rv-jp-l{font-size:58px!important}
     #rv-card .rv-jp-s{font-size:44px!important}
     #rv-card .rv-title{font-size:27px!important}
@@ -710,14 +713,20 @@ function tplReview(){
   }
 
   const d = reviewCard();
-  const ghost = (dy, sc, op) => `<div aria-hidden="true" class="rv-ghost" style="position:absolute;inset:0;margin:auto;width:min(84vw,400px);height:300px;background:#fff;border-radius:20px;transform:translateY(${dy}px) scale(${sc});opacity:${op};box-shadow:0 18px 44px rgba(0,0,0,.3)"></div>`;
+  // Les fantomes epousent EXACTEMENT la carte : le wrapper #rv-stack prend la
+  // hauteur de la carte, les fantomes en inset:0 en heritent. Opaques comme de
+  // vraies cartes — seule leur tranche basse depasse, echelle decroissante.
+  const ghost = (dy, sc, sh) => `<div aria-hidden="true" style="position:absolute;inset:0;background:#fff;border-radius:20px;transform:translateY(${dy}px) scale(${sc});box-shadow:${sh}"></div>`;
   return `<div class="ov ov-review" role="dialog" aria-modal="true" aria-label="Mode révision">${top}
-    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:10px 20px 4px;position:relative;min-height:0">
-      ${remain > 2 ? ghost(26, .9, .22) : ''}${remain > 1 ? ghost(14, .95, .45) : ''}
-      <div id="rv-card" class="rv-card" data-swipe style="position:relative;width:min(88vw,420px);max-height:100%;overflow-y:auto;background:#fff;border-radius:20px;padding:28px 26px 26px;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:rvIn .3s ease both;cursor:pointer">
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:10px 20px 4px;min-height:0">
+      <div id="rv-stack" style="position:relative;max-height:100%;display:flex">
+        ${remain > 2 ? ghost(24, .928, '0 26px 50px rgba(0,0,0,.28)') : ''}
+        ${remain > 1 ? ghost(12, .966, '0 18px 40px rgba(0,0,0,.35)') : ''}
+        <div id="rv-card" class="rv-card" data-swipe style="position:relative;width:100%;max-height:100%;overflow-y:auto;background:#fff;border-radius:20px;padding:28px 26px 26px;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:rvIn .32s cubic-bezier(.25,.8,.3,1) both;cursor:pointer">
         <div data-hint-r aria-hidden="true" style="position:absolute;top:14px;left:14px;transform:rotate(-12deg);border:3px solid #00884A;color:#00884A;border-radius:8px;padding:2px 10px;font:900 13px 'Hanken Grotesk';letter-spacing:.06em;opacity:0;pointer-events:none">済 JE SAVAIS</div>
         <div data-hint-l aria-hidden="true" style="position:absolute;top:14px;right:14px;transform:rotate(12deg);border:3px solid #957100;color:#957100;border-radius:8px;padding:2px 10px;font:900 13px 'Hanken Grotesk';letter-spacing:.06em;opacity:0;pointer-events:none">À REVOIR</div>
         ${tplRvInner(d, r.revealed)}
+        </div>
       </div>
     </div>
     <div style="display:flex;justify-content:center;align-items:flex-start;gap:22px;padding:16px 20px 8px">
