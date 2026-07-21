@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>日本ブリーフィング — Nihon Briefing</title>
+<meta name="theme-color" content="#141414">
+<meta name="description" content="Fiches de préparation au Japon : vocabulaire, plats, anecdotes, étiquette.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Nihon">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#e9e7e1;font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  a{color:#0079C2}a:hover{color:#005a91}
+  input::placeholder{color:#9a958a}
+  .hscroll{scrollbar-width:none}.hscroll::-webkit-scrollbar{display:none}
+  @keyframes stampIn{0%{transform:rotate(-11deg) scale(2.2);opacity:0}60%{transform:rotate(-11deg) scale(.92);opacity:1}100%{transform:rotate(-11deg) scale(1);opacity:1}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .stampOff:hover{border-color:#C6002B!important;color:#C6002B!important}
+
+  /* --- grille responsive ------------------------------------------------ */
+  :root{--gut:18px;--shell:520px}
+  #shell{width:100%;max-width:var(--shell);margin:0 auto;min-height:100dvh;background:#faf9f6;box-shadow:0 0 0 1px rgba(0,0,0,.05),0 0 60px rgba(30,26,20,.12);display:flex;flex-direction:column}
+  .gx{padding-left:var(--gut);padding-right:var(--gut)}
+  .feed{flex:1;display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-content:start;padding:16px var(--gut) 24px}
+  .cell{display:flex}
+  .cell>*{flex:1;min-width:0}
+  .row-full{grid-column:1/-1}
+  .card{height:100%;display:flex;flex-direction:column}
+  .card>.body{flex:1;display:flex;flex-direction:column}
+  .card .spacer{flex:1}
+
+  @media (min-width:600px){
+    :root{--gut:22px;--shell:680px}
+    .feed{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  }
+  @media (min-width:960px){
+    :root{--gut:28px;--shell:1000px}
+  }
+  @media (min-width:1280px){
+    :root{--shell:1320px}
+    .feed{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+  }
+  /* le panneau prend toute la hauteur sans ombre "téléphone" sur grand écran */
+  @media (min-width:600px){
+    #shell{box-shadow:0 0 0 1px rgba(0,0,0,.05),0 0 80px rgba(30,26,20,.10)}
+  }
+  /* confort tactile : cibles plus grandes sur écran fin */
+  @media (hover:none){
+    .stampOff{width:38px!important;height:38px!important}
+  }
+  .chiprow{flex-wrap:nowrap}
+  @media (min-width:960px){.chiprow{flex-wrap:wrap;overflow-x:visible}}
+  @media (min-width:960px){.jptitle{font-size:34px!important}}
+</style>
+</head>
+<body>
+<div id="shell"></div>
+
+<script>
+/* ------------------------------------------------------------------ config */
+const CONFIG = {
+  tripDate: '2026-08-04',   // date de départ — pilote le compte à rebours
+  showRomaji: true
+};
+
+/* ----------------------------------------------------------- catégories */
+const CATS = [
+  ['Anecdote','話','#E60012'],['Actu','新','#F15A22'],['Plat','食','#E8A200'],['Vocabulaire','語','#009BBF'],
+  ['Histoire','史','#8F5A2B'],['Géographie','地','#00A65A'],['Technologie','技','#0079C2'],['Science','科','#00AC9B'],
+  ['Socio-éco','社','#6E7B8B'],['Sport','運','#C6002B'],['Musique','音','#B6007A'],['Cinéma','映','#5B4B8A'],
+  ['Étiquette','礼','#B58A00'],['Jeu vidéo','遊','#7A3E9D'],['Boisson','飲','#C77800'],['Lieu','所','#2E8B57'],
+  ['Transport','交','#444B54'],['Kanji','字','#1A1A1A'],['Insolite','奇','#9C27B0']
+];
+
+/* ---------------------------------------------------------------- fiches */
+const DATA = [
+  {id:1,cat:'Anecdote',title:'Les corbeaux qui font casser leurs noix par les voitures',body:"Les hashibuto-garasu de Tokyo déposent des noix sur les passages piétons, attendent qu'une voiture les écrase, puis récupèrent la chair au feu rouge. Ils savent aussi ouvrir les sacs poubelles, d'où les filets jaunes partout."},
+  {id:2,cat:'Anecdote',title:'Godzilla contourne le Palais impérial',body:"Dans le film de 1954, le monstre évite la résidence de l'Empereur. Toho jugeait impensable de la montrer détruite."},
+  {id:3,cat:'Anecdote',title:'Chaque gare JR a sa mélodie',body:"La hassha melody annonce le départ. Celle d'Ebisu est le jingle de la bière Yebisu, emprunté au Troisième Homme."},
+  {id:4,cat:'Actu',tone:'négatif',title:'Taxe de sortie triplée',body:"Depuis juillet 2026, 3 000 ¥ par passager, incluse d'office dans le billet."},
+  {id:5,cat:'Actu',tone:'positif',title:'Le yen au plus bas depuis 1986',body:"162,8 JPY pour 1 USD début juillet. Pouvoir d'achat historique, mais risque d'intervention des autorités."},
+  {id:6,cat:'Actu',tone:'neutre',title:'Taxes de séjour en hausse',body:'Kyoto a revu sa grille en mars, Hokkaidō a instauré 100–500 ¥/nuit en avril. Réponse au surtourisme.'},
+  {id:7,cat:'Plat',jp:'ひつまぶし',romaji:'hitsumabushi',meta:'Nagoya',body:'Anguille grillée sur riz, mangée en trois temps : nature, avec condiments, puis en ochazuke au dashi.'},
+  {id:8,cat:'Plat',jp:'もつ鍋',romaji:'motsunabe',meta:'Fukuoka',body:"Fondue d'abats de bœuf, ail, ciboule, bouillon miso ou soja."},
+  {id:9,cat:'Plat',jp:'親子丼',romaji:'oyakodon',body:"Poulet et œuf sur riz, « parent-enfant ». L'œuf doit rester baveux."},
+  {id:10,cat:'Vocabulaire',jp:'お願いします',kana:'おねがいします',romaji:'onegaishimasu',fr:"S'il vous plaît",body:'Le passe-partout absolu.'},
+  {id:11,cat:'Vocabulaire',jp:'大丈夫です',kana:'だいじょうぶです',romaji:'daijōbu desu',fr:"C'est bon, non merci",body:'Sert aussi à dire « ça va ».'},
+  {id:12,cat:'Vocabulaire',jp:'これください',romaji:'kore kudasai',fr:"Celui-ci, s'il vous plaît",body:'Résout 80 % des commandes.'},
+  {id:13,cat:'Vocabulaire',jp:'お会計お願いします',kana:'おかいけいおねがいします',romaji:'okaikei onegaishimasu',fr:"L'addition, s'il vous plaît",body:'On paie souvent à la caisse en sortant.'},
+  {id:14,cat:'Vocabulaire',jp:'暑いですね',kana:'あついですね',romaji:'atsui desu ne',fr:'Il fait chaud, hein',body:"Le brise-glace de l'été."},
+  {id:15,cat:'Vocabulaire',jp:'助かりました',kana:'たすかりました',romaji:'tasukarimashita',fr:"Vous m'avez sauvé",body:"Merci plus fort qu'arigatō."},
+  {id:16,cat:'Vocabulaire',jp:'すみません',romaji:'sumimasen',fr:'Pardon, excusez-moi, merci',body:'Le couteau suisse.'},
+  {id:17,cat:'Vocabulaire',jp:'現金だけですか',kana:'げんきんだけですか',romaji:'genkin dake desu ka',fr:"C'est espèces uniquement ?"},
+  {id:18,cat:'Vocabulaire',jp:'一人です',kana:'ひとりです',romaji:'hitori desu',fr:'Je suis seul',body:'Deux : futari desu.'},
+  {id:19,cat:'Vocabulaire',jp:'ごちそうさまでした',romaji:'gochisōsama deshita',fr:'Merci pour le repas',body:'Se dit en partant.'},
+  {id:20,cat:'Histoire',title:'Meiji, 30 ans pour passer du féodalisme à la puissance',body:"1868 : réouverture et industrialisation forcée. En 1905 le Japon bat la Russie, première victoire d'une puissance asiatique sur une européenne à l'ère moderne."},
+  {id:21,cat:'Histoire',title:"Sakoku, 200 ans de fermeture par un trou d'épingle",body:'De 1639 à 1853, seul Dejima à Nagasaki commerce avec les Hollandais. Toute la science occidentale est entrée par là.'},
+  {id:22,cat:'Géographie',title:'73 % du territoire est montagneux',body:'124 millions d’habitants sur 27 % du sol.'},
+  {id:23,cat:'Géographie',title:'14 125 îles',body:'Recomptage officiel de 2023, contre 6 852 depuis 1987. Meilleure résolution cartographique.'},
+  {id:24,cat:'Technologie',title:'Un distributeur pour 30 habitants',body:'Record mondial, viable seulement parce que le vandalisme est quasi nul.'},
+  {id:25,cat:'Technologie',title:'Rapidus, le pari 2 nm',body:'Fonderie nationale à Hokkaidō pour rattraper TSMC.'},
+  {id:26,cat:'Science',title:'18 % des séismes mondiaux ≥ M6',body:'Jonction de quatre plaques tectoniques. Les alertes JMA arrivent avant la secousse.'},
+  {id:27,cat:'Science',title:'Tōhoku 2011 a raccourci la journée',body:'Honshū déplacée de 2,4 m vers l’est, jour terrestre réduit de 1,8 microseconde.'},
+  {id:28,cat:'Socio-éco',title:'1,15 enfant par femme',body:'Population en baisse de 900 000 par an. Un Japonais sur dix a plus de 80 ans.'},
+  {id:29,cat:'Socio-éco',title:'Le shuntō repart après 30 ans',body:'Hausses salariales > 5 % en 2024–2026, du jamais vu depuis les années 90.'},
+  {id:30,cat:'Sport',title:'Un yokozuna ne rétrograde jamais',body:'Le rang suprême du sumo est à vie : celui qui décline prend sa retraite.'},
+  {id:31,cat:'Sport',title:'Kōshien écrase tout en août',body:'Baseball lycéen, 3 500 lycées, élimination directe. Les perdants repartent avec un sac de terre du terrain.'},
+  {id:32,cat:'Musique',title:'2e marché mondial, et le CD y règne encore',body:'Objet de collection lié aux rencontres avec les idols.'},
+  {id:33,cat:'Musique',title:'La city pop ressuscitée par un algorithme',body:'Plastic Love virale 34 ans après. Les vinyles sont passés de 500 ¥ à 20 000 ¥ à Shibuya.'},
+  {id:34,cat:'Cinéma',title:'Kiyoshi Kurosawa, le maître du malaise',body:'Aucun lien avec Akira. Cure (1997) : un tueur qui ne tue personne lui-même.'},
+  {id:35,cat:'Cinéma',title:'Ghibli travaille sans storyboard complet',body:"Sur Le Voyage de Chihiro, personne ne connaissait la fin au démarrage de l'animation."},
+  {id:36,cat:'Étiquette',title:'Ne verse jamais ton propre verre',body:'Tu sers les autres, ils te servent. Un verre plein ne peut pas être resservi.'},
+  {id:37,cat:'Étiquette',title:'Le silence dans les transports est sacré',body:"Pas d'appel, téléphone en manner mode."},
+  {id:38,cat:'Jeu vidéo',title:'Les game centers font vivre des jeux morts ailleurs',body:'Un étage de rhythm games à Akihabara un soir de semaine : niveau surhumain, silence total.'},
+  {id:39,cat:'Jeu vidéo',title:'Nintendo, fondé en 1889',body:"Cartes hanafuda, puis taxis, hôtels d'amour et riz instantané avant le jeu vidéo."},
+  {id:40,cat:'Boisson',jp:'ハイボール',romaji:'haibōru',body:"Le highball, vraie boisson nationale de l'izakaya. Whisky japonais et eau gazeuse, ultra glacé."},
+  {id:41,cat:'Boisson',jp:'純喫茶',romaji:'jun-kissa',body:"Les kissaten, cafés d'avant Starbucks. Siphon en verre, 600 ¥, tu restes deux heures."},
+  {id:42,cat:'Lieu',title:'Kurashiki, Okayama',body:'Quartier Bikan, canaux Edo, zéro foule. Le musée Ōhara cache un El Greco.'},
+  {id:43,cat:'Lieu',title:'Yakushima, Kagoshima',body:'Cèdres millénaires, mousse, pluie 300 jours par an. Le contre-pied de Tokyo.'},
+  {id:44,cat:'Transport',title:'Les konbini sont ta banque',body:"ATM 7-Eleven ouverts aux cartes étrangères 24/7. Le koban est fait pour qu'on lui demande son chemin."},
+  {id:45,cat:'Transport',title:'Pas de poubelles dans la rue',body:'Sarin de 1995, mais surtout tri en 6 à 8 flux et dumping d’ordures ménagères.'},
+  {id:46,cat:'Kanji',jp:'口',romaji:'kuchi · guchi',meta:'Bouche, ouverture, sortie',body:'出口 sortie, 入口 entrée, 東口 est, 西口 ouest, 北口 nord, 南口 sud.'},
+  {id:47,cat:'Kanji',jp:'駅',romaji:'eki',meta:'Gare',body:'東京駅 gare de Tokyo, 駅前 le quartier devant la gare, 駅弁 le bentō du shinkansen.'},
+  {id:48,cat:'Insolite',title:'Le Jinmenken, chien à visage humain',body:'Légende urbaine des années 80, une créature qui double les voitures sur les autoroutes de Tokyo.'},
+  {id:49,cat:'Insolite',title:"L'affaire de Setagaya, non résolue depuis 26 ans",body:'Décembre 2000, famille de quatre assassinée. Le tueur reste des heures, mange, dort, utilise l’ordinateur. ADN, empreintes, sang laissés sur place. Toujours rien.'}
+];
+
+/* ------------------------------------------------------------------ état */
+const STORE_KEY = 'nihon-briefing-mastered';
+const state = { query:'', cat:'all', day:0, seg:'all', mastered:loadMastered() };
+
+function loadMastered(){
+  try { const m = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); return Array.isArray(m) ? m : []; }
+  catch(e){ return []; }
+}
+function saveMastered(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state.mastered)); } catch(e){}
+}
+function toggle(id){
+  state.mastered = state.mastered.includes(id)
+    ? state.mastered.filter(x => x !== id)
+    : [...state.mastered, id];
+  saveMastered();
+  render();
+}
+
+/* ------------------------------------------------------------- utilitaires */
+const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const esc  = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const CAT_MAP = {};
+CATS.forEach(([n,k,c]) => CAT_MAP[n] = {kanji:k, color:c});
+
+const TONE_STYLES = {
+  'positif': ['#00A65A','rgba(0,166,90,.1)'],
+  'négatif': ['#C6002B','rgba(198,0,43,.09)'],
+  'neutre' : ['#6E7B8B','rgba(110,123,139,.12)']
+};
+
+/* ------------------------------------------------------------ sélection */
+function selectItems(){
+  const {query, cat, day, seg, mastered} = state;
+  const data = DATA.map(d => ({...d, day: d.day || 1}));
+  const q = norm(query);
+
+  const list = data.filter(d => {
+    if (cat !== 'all' && d.cat !== cat) return false;
+    if (day !== 0 && d.day !== day) return false;
+    const done = mastered.includes(d.id);
+    if (seg === 'todo' && done) return false;
+    if (seg === 'done' && !done) return false;
+    if (q) {
+      const hay = norm([d.title,d.jp,d.kana,d.romaji,d.fr,d.body,d.meta,d.cat].filter(Boolean).join(' '))
+                + ' ' + [d.jp,d.kana].filter(Boolean).join(' ');
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const items = [];
+  let lastDay = null;
+  list.forEach(d => {
+    if (d.day !== lastDay) {
+      lastDay = d.day;
+      const n = list.filter(x => x.day === d.day).length;
+      items.push({id:'h'+d.day, isHeader:true, isCard:false, label:'JOUR '+d.day, sub:n+' fiches'});
+    }
+    const cm = CAT_MAP[d.cat] || {kanji:'?', color:'#888'};
+    const done = mastered.includes(d.id);
+    const isVocab  = !!d.fr && !!d.jp;
+    const isHybrid = !isVocab && !!d.jp;
+    const ts = TONE_STYLES[d.tone];
+    items.push({
+      ...d, isHeader:false, isCard:true,
+      kanji:cm.kanji, color:cm.color, catName:d.cat,
+      isVocab, isHybrid, isPlain: !d.jp,
+      hasKana: isVocab && !!d.kana, hasBody: !!d.body, hasMeta: !!d.meta,
+      showRomaji: CONFIG.showRomaji && !!d.romaji,
+      hasTone: !!d.tone, toneColor: ts ? ts[0] : '#888', toneBg: ts ? ts[1] : 'transparent',
+      mastered: done, fade: done ? '0.45' : '1',
+      borderColor: isVocab && !done ? '#1a1a1a' : '#e6e3db'
+    });
+  });
+
+  return {data, items};
+}
+
+/* ------------------------------------------------------------ templates */
+function tplHeader(it){
+  return `<div style="display:flex;align-items:center;gap:10px;padding:6px 2px 0">
+    <span style="background:#141414;color:#fff;border-radius:7px;padding:3px 9px;font:800 11px 'Hanken Grotesk';letter-spacing:.16em">${esc(it.label)}</span>
+    <span style="font:600 11px 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:#9a958a">${esc(it.sub)}</span>
+    <span style="flex:1;height:1px;background:#e2dfd6"></span>
+  </div>`;
+}
+
+function tplStamp(it){
+  return it.mastered
+    ? `<div data-stamp="${it.id}" title="Retirer le tampon" style="position:absolute;top:7px;right:9px;width:62px;height:62px;border:2.5px solid #C6002B;border-radius:50%;display:grid;place-items:center;cursor:pointer;z-index:3;background:rgba(250,249,246,.8);animation:stampIn .4s cubic-bezier(.2,1.7,.5,1)">
+         <div style="text-align:center;color:#C6002B"><div style="font:900 17px 'Noto Sans JP';line-height:1">済</div><div style="font:800 6.5px 'Hanken Grotesk';letter-spacing:.14em">MAÎTRISÉ</div></div>
+       </div>`
+    : `<div class="stampOff" data-stamp="${it.id}" title="Marquer maîtrisé" style="position:absolute;top:10px;right:10px;width:33px;height:33px;border-radius:50%;border:1.6px dashed #cfcabd;display:grid;place-items:center;cursor:pointer;z-index:3;color:#b3aea3;font:700 13px 'Noto Sans JP';background:#fff;transition:border-color .15s,color .15s">済</div>`;
+}
+
+const CHEV_L = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" opacity=".75"><path d="M15 5l-7 7 7 7"></path></svg>`;
+const CHEV_R = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" opacity=".75"><path d="M9 5l7 7-7 7"></path></svg>`;
+
+function tplVocab(it){
+  return `<div style="padding:19px 52px 15px;text-align:center;position:relative;flex:1;display:flex;flex-direction:column;justify-content:center">
+      <div style="position:absolute;top:13px;left:13px;width:29px;height:29px;border-radius:9px;background:${it.color};color:#fff;font:900 16px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
+      ${it.hasKana ? `<div style="font:500 12.5px 'Noto Sans JP';color:#8a8578;letter-spacing:.07em;margin-bottom:5px">${esc(it.kana)}</div>` : ''}
+      <div style="font:700 27px 'Noto Sans JP';color:#111;line-height:1.2;letter-spacing:.01em">${esc(it.jp)}</div>
+      ${it.showRomaji ? `<div style="font:700 13px 'Hanken Grotesk';letter-spacing:.15em;text-transform:uppercase;color:${it.color};margin-top:7px">${esc(it.romaji)}</div>` : ''}
+    </div>
+    <div style="display:flex;align-items:center;background:${it.color};padding:9px 15px;gap:10px">
+      ${CHEV_L}<span style="flex:1;text-align:center;font:600 14px 'Hanken Grotesk';color:#fff">${esc(it.fr)}</span>${CHEV_R}
+    </div>
+    ${it.hasBody ? `<div style="padding:10px 16px;font:400 12.5px/1.55 'Hanken Grotesk';color:#6b675e;background:#fbfaf7">${esc(it.body)}</div>` : ''}`;
+}
+
+function tplHybrid(it){
+  return `<div style="padding:15px 44px 15px 16px;display:flex;gap:13px;flex:1">
+      <div style="flex:none;width:33px;height:33px;border-radius:9px;background:${it.color};color:#fff;font:900 18px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+          <span style="font:700 19px 'Noto Sans JP';color:#111">${esc(it.jp)}</span>
+          <span style="font:700 11.5px 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:${it.color}">${esc(it.romaji)}</span>
+        </div>
+        ${it.hasMeta ? `<div style="font:600 11px 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#9a958a;margin-bottom:4px">${esc(it.meta)}</div>` : ''}
+        <div style="font:400 13px/1.55 'Hanken Grotesk';color:#5a564d">${esc(it.body)}</div>
+      </div>
+    </div>`;
+}
+
+function tplPlain(it){
+  return `<div style="padding:15px 44px 15px 16px;display:flex;gap:13px;flex:1">
+      <div style="flex:none;width:33px;height:33px;border-radius:9px;background:${it.color};color:#fff;font:900 18px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+          <span style="font:700 10.5px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:${it.color}">${esc(it.catName)}</span>
+          ${it.hasTone ? `<span style="font:700 10.5px 'Hanken Grotesk';letter-spacing:.08em;color:${it.toneColor};background:${it.toneBg};border-radius:5px;padding:1px 6px">${esc(it.tone)}</span>` : ''}
+        </div>
+        <div style="font:700 15px/1.3 'Hanken Grotesk';color:#111;margin-bottom:5px">${esc(it.title)}</div>
+        <div style="font:400 13px/1.55 'Hanken Grotesk';color:#5a564d">${esc(it.body)}</div>
+      </div>
+    </div>`;
+}
+
+function tplCard(it){
+  const inner = it.isVocab ? tplVocab(it) : it.isHybrid ? tplHybrid(it) : tplPlain(it);
+  return `<div class="card" style="position:relative;background:#fff;border:1.5px solid ${it.borderColor};border-radius:16px;overflow:hidden;animation:fadeUp .25s ease both">
+    ${tplStamp(it)}
+    <div class="body" style="opacity:${it.fade};transition:opacity .2s">${inner}</div>
+  </div>`;
+}
+
+/* --------------------------------------------------------------- render */
+function render(){
+  const {data, items} = selectItems();
+  const {query, cat, day, seg, mastered} = state;
+
+  const trip = new Date(CONFIG.tripDate + 'T00:00:00');
+  const dd = Math.ceil((trip - new Date()) / 864e5);
+  const countdown = dd > 0 ? 'J−' + dd : (dd === 0 ? 'DÉPART !' : 'AU JAPON');
+  const todayLabel = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+
+  const doneCount = mastered.filter(id => data.some(d => d.id === id)).length;
+  const pct = Math.round(doneCount / data.length * 100) + '%';
+
+  const stripe = CATS.map(([n,k,c]) => `<span style="flex:1;background:${c}"></span>`).join('');
+
+  const catChips = [{key:'all',label:'Tout',kanji:'全',color:'#141414'},
+                    ...CATS.map(([n,k,c]) => ({key:n,label:n,kanji:k,color:c}))]
+    .map(c => {
+      const active = cat === c.key;
+      return `<div data-cat="${esc(c.key)}" style="flex:none;display:flex;align-items:center;gap:7px;border-radius:999px;padding:5px 12px 5px 6px;cursor:pointer;background:${active?'#141414':'#fff'};border:1.5px solid ${active?'#141414':'#e6e3db'};transition:background .15s">
+        <span style="width:24px;height:24px;border-radius:7px;background:${c.color};color:#fff;font:900 14px 'Noto Sans JP';display:grid;place-items:center">${esc(c.kanji)}</span>
+        <span style="font:700 12.5px 'Hanken Grotesk';color:${active?'#fff':'#3a372f'}">${esc(c.label)}</span>
+      </div>`;
+    }).join('');
+
+  const segChips = [['all','Tout'],['todo','À voir'],['done','済 Fait']].map(([k,l]) =>
+    `<span data-seg="${k}" style="cursor:pointer;border-radius:999px;padding:5px 12px;font:700 12px 'Hanken Grotesk';background:${seg===k?'#141414':'transparent'};color:${seg===k?'#fff':'#7a756a'};box-shadow:${seg===k?'0 1px 3px rgba(0,0,0,.25)':'none'};transition:background .15s">${esc(l)}</span>`
+  ).join('');
+
+  const dayNums = [...new Set(data.map(d => d.day || 1))].sort((a,b) => a-b);
+  const dayChips = [{v:0,label:'Tous les jours'}, ...dayNums.map(n => ({v:n,label:'Jour '+n}))].map(d => {
+    const active = day === d.v;
+    return `<span data-day="${d.v}" style="flex:none;cursor:pointer;border-radius:999px;padding:6px 13px;font:700 12px 'Hanken Grotesk';background:${active?'#fff':'transparent'};color:${active?'#141414':'#7a756a'};border:1.5px solid ${active?'#141414':'#dedbd1'}">${esc(d.label)}</span>`;
+  }).join('');
+
+  const feed = items.length
+    ? items.map(it => it.isHeader
+        ? `<div class="cell row-full">${tplHeader(it)}</div>`
+        : `<div class="cell">${tplCard(it)}</div>`).join('')
+    : `<div class="row-full" style="text-align:center;padding:52px 20px;color:#9a958a">
+         <div style="font:900 34px 'Noto Sans JP';color:#d5d1c6">行き止まり</div>
+         <div style="font:600 13px 'Hanken Grotesk';margin-top:8px">Voie sans issue — aucune fiche ne correspond.</div>
+         <div id="reset" style="display:inline-block;margin-top:14px;cursor:pointer;font:700 13px 'Hanken Grotesk';color:#0079C2">Réinitialiser les filtres</div>
+       </div>`;
+
+  document.getElementById('shell').innerHTML = `
+  <div class="gx" style="padding-top:18px;padding-bottom:14px">
+    <div style="background:#141414;border-radius:16px;padding:16px 18px 15px;overflow:hidden">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+        <span class="jptitle" style="font:900 26px 'Noto Sans JP';color:#fff;letter-spacing:.02em">日本ブリーフィング</span>
+        <span style="font:800 15px 'Hanken Grotesk';color:#E60012;background:#fff;border-radius:7px;padding:2px 8px;letter-spacing:.04em">${esc(countdown)}</span>
+      </div>
+      <div style="font:600 11px 'Hanken Grotesk';letter-spacing:.28em;text-transform:uppercase;color:#8f8a7e;margin-top:4px">Nihon briefing · ${esc(todayLabel)}</div>
+      <div style="display:flex;height:5px;margin-top:12px;border-radius:3px;overflow:hidden">${stripe}</div>
+    </div>
+  </div>
+
+  <div style="position:sticky;top:0;z-index:20;background:rgba(250,249,246,.93);backdrop-filter:blur(12px);border-bottom:1px solid #eceae3;padding:10px 0 11px;display:flex;flex-direction:column;gap:9px">
+    <div class="gx">
+      <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #1a1a1a;border-radius:12px;padding:0 14px;max-width:640px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+        <input id="q" value="${esc(query)}" placeholder="Chercher — « l'addition », 駅, motsunabe…" style="flex:1;border:none;outline:none;background:transparent;font:500 15px 'Hanken Grotesk';color:#1a1a1a;padding:12px 0">
+        ${query ? `<span id="clear" style="cursor:pointer;font:700 12px 'Hanken Grotesk';color:#9a958a;padding:4px">✕</span>` : ''}
+      </div>
+    </div>
+    <div class="hscroll gx chiprow" style="display:flex;gap:7px;overflow-x:auto;padding-top:1px;padding-bottom:1px">${catChips}</div>
+    <div class="hscroll gx" style="display:flex;gap:7px;overflow-x:auto;align-items:center">
+      <div style="flex:none;display:flex;background:#efede6;border-radius:999px;padding:3px">${segChips}</div>
+      ${dayChips}
+    </div>
+  </div>
+
+  <div class="feed">${feed}</div>
+
+  <div class="gx" style="position:sticky;bottom:0;z-index:20;background:#141414;padding-top:11px;padding-bottom:13px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px">
+      <span style="font:700 12px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:#8f8a7e">Tampons collectés</span>
+      <span style="font:800 13px 'Hanken Grotesk';color:#fff">${doneCount} / ${data.length} <span style="color:#E60012;font-family:'Noto Sans JP'">済</span></span>
+    </div>
+    <div style="height:6px;border-radius:3px;background:#2b2b2b;overflow:hidden">
+      <div style="height:100%;width:${pct};background:#E60012;border-radius:3px;transition:width .35s ease"></div>
+    </div>
+  </div>`;
+
+}
+
+/* ---------------------------------------------------------------- events
+   Attaché UNE SEULE FOIS, au démarrage. render() remplace le innerHTML du
+   shell mais pas le shell lui-même : rattacher ici à chaque rendu empilerait
+   les écouteurs et ferait tourner toggle() n fois par clic. */
+function wire(){
+  const shell = document.getElementById('shell');
+
+  shell.addEventListener('input', e => {
+    if (e.target.id !== 'q') return;
+    state.query = e.target.value;
+    const pos = e.target.selectionStart;
+    render();
+    const next = document.getElementById('q');
+    next.focus();
+    next.setSelectionRange(pos, pos);
+  });
+
+  shell.addEventListener('click', e => {
+    if (e.target.closest('#clear')) { state.query = ''; return render(); }
+    if (e.target.closest('#reset')) {
+      Object.assign(state, {query:'', cat:'all', day:0, seg:'all'});
+      return render();
+    }
+    const cat = e.target.closest('[data-cat]');
+    if (cat) { state.cat = cat.dataset.cat; return render(); }
+    const seg = e.target.closest('[data-seg]');
+    if (seg) { state.seg = seg.dataset.seg; return render(); }
+    const day = e.target.closest('[data-day]');
+    if (day) { state.day = Number(day.dataset.day); return render(); }
+    const stamp = e.target.closest('[data-stamp]');
+    if (stamp) { toggle(Number(stamp.dataset.stamp)); }
+  });
+}
+
+wire();
+render();
+
+/* ------------------------------------------------------------------- PWA
+   Le service worker exige HTTPS ou localhost : en ouvrant le fichier en
+   file:// l'enregistrement echoue, c'est attendu et sans consequence. */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => {
+      console.warn('Service worker non enregistre :', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
