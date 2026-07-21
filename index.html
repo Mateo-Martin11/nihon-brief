@@ -627,10 +627,16 @@ function flyAndAct(action){
   if (!card || rm) return reviewAct(action);
   if (card.dataset.flying) return;   // ignore un second declenchement en plein vol
   card.dataset.flying = '1';
+  // L'animation d'entree (rvIn, fill:both) garde la main sur transform dans la
+  // cascade : tant qu'elle est la, la transition de vol est supprimee et la
+  // carte se teleporte. On la retire et on acte l'etat de repos (reflow)
+  // avant de lancer le vol.
+  card.style.animation = 'none';
+  void card.offsetWidth;
   const hint = card.querySelector(action === 'know' ? '[data-hint-r]' : '[data-hint-l]');
   if (hint) hint.style.opacity = 1;
   card.classList.add(action === 'know' ? 'rv-fly-r' : 'rv-fly-l');
-  setTimeout(() => reviewAct(action), 300);
+  setTimeout(() => reviewAct(action), 340);
 }
 
 function reviewAct(action){
@@ -961,6 +967,9 @@ function wireOverlays(){
     drag = {el: card || page, isCard: !!card, x0: e.clientX, y0: e.clientY, dx: 0};
     dragMoved = false;
     drag.el.classList.remove('rv-back');
+    // meme piege que flyAndAct : l'animation d'entree ecraserait le transform
+    // inline du doigt — sans ca la carte ne suit pas le geste.
+    if (drag.isCard) drag.el.style.animation = 'none';
     drag.el.setPointerCapture?.(e.pointerId);
   });
 

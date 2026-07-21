@@ -8,7 +8,7 @@
      par URL, donc cache-first sans revalidation est sur.
 */
 
-const VERSION    = 'v6';
+const VERSION    = 'v7';
 const SHELL      = `nihon-shell-${VERSION}`;
 const FONTS      = `nihon-fonts-${VERSION}`;
 const SHELL_URLS = [
