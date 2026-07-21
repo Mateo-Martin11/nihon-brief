@@ -18,8 +18,8 @@
 <style>
   body{margin:0;background:#e9e7e1;font-family:'Hanken Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   *{box-sizing:border-box}
-  a{color:#0079C2}a:hover{color:#005a91}
-  input::placeholder{color:#9a958a}
+  a{color:#0064A6}a:hover{color:#005a91}
+  input::placeholder{color:#76736a}
   .hscroll{scrollbar-width:none}.hscroll::-webkit-scrollbar{display:none}
   @keyframes stampIn{0%{transform:rotate(-11deg) scale(2.2);opacity:0}60%{transform:rotate(-11deg) scale(.92);opacity:1}100%{transform:rotate(-11deg) scale(1);opacity:1}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -59,6 +59,42 @@
   .chiprow{flex-wrap:nowrap}
   @media (min-width:960px){.chiprow{flex-wrap:wrap;overflow-x:visible}}
   @media (min-width:960px){.jptitle{font-size:34px!important}}
+
+  /* --- accessibilite ---------------------------------------------------- */
+
+  /* Les controles sont de vrais <button> : on neutralise le style natif sans
+     toucher au comportement clavier ni a la semantique. */
+  button{font:inherit;color:inherit;background:none;border:none;margin:0;
+         text-align:inherit;-webkit-appearance:none;appearance:none}
+
+  /* Anneau de focus visible au clavier uniquement — jamais supprime sans
+     remplacement (regle 28 : "Remove focus outline without replacement"). */
+  :focus-visible{outline:3px solid #0064A6;outline-offset:2px;border-radius:6px}
+  #q:focus-visible{outline-offset:4px}
+
+  /* Cibles tactiles >= 44px sans deformer la maquette : la zone cliquable est
+     etendue par un pseudo-element, les bornes visuelles ne bougent pas. */
+  .hit{position:relative;touch-action:manipulation}
+  .hit::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+              min-width:44px;min-height:44px;width:100%;height:100%}
+
+  /* Le clavier iOS zoome sur tout champ sous 16px : on verrouille a 16. */
+  input{font-size:16px}
+
+  /* Reserve la place de la barre gestuelle iOS / du notch en mode standalone. */
+  .safe-bottom{padding-bottom:calc(13px + env(safe-area-inset-bottom,0px))}
+
+  /* Chiffres a chasse fixe : le compteur ne fait plus sauter la mise en page. */
+  .tnum{font-variant-numeric:tabular-nums}
+
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+           overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  /* Regle 9 et 99 : on respecte le reglage systeme de reduction des animations. */
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+                         transition-duration:.01ms!important;scroll-behavior:auto!important}
+  }
 </style>
 </head>
 <body>
@@ -156,13 +192,50 @@ function toggle(id){
 const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const esc  = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+/* --- couleurs accessibles ------------------------------------------------
+   Les 19 couleurs de marque sont vives : la moitie tombe sous 4.5:1 sur blanc,
+   que ce soit en texte colore ou en fond de pastille sous du texte blanc.
+   On derive donc pour chacune une « encre » : meme teinte, assombrie juste ce
+   qu'il faut. Le calcul est fait ici plutot que code en dur, pour qu'une
+   categorie ajoutee plus tard reste conforme sans intervention.
+   La couleur vive d'origine reste utilisee la ou aucun texte ne se pose
+   dessus — le bandeau de l'en-tete — pour ne rien perdre du punch visuel. */
+const _rgb  = h => { h = h.replace('#',''); return [0,2,4].map(i => parseInt(h.substr(i,2),16)); };
+const _hex  = r => '#' + r.map(c => c.toString(16).padStart(2,'0')).join('');
+const _lin  = c => { c /= 255; return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
+const _lum  = r => 0.2126*_lin(r[0]) + 0.7152*_lin(r[1]) + 0.0722*_lin(r[2]);
+const contrast = (a, b) => {
+  const [hi, lo] = [_lum(a), _lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+// Assombrit par pas entiers et verifie APRES arrondi : la valeur produite est
+// donc reellement au-dessus du seuil, pas seulement sa version flottante.
+function ink(hexColor, bg = [255,255,255], target = 4.5) {
+  const base = _rgb(hexColor);
+  for (let k = 1000; k >= 0; k--) {
+    const c = base.map(v => Math.round(v * k / 1000));
+    if (contrast(c, bg) >= target) return _hex(c);
+  }
+  return '#000000';
+}
+
 const CAT_MAP = {};
-CATS.forEach(([n,k,c]) => CAT_MAP[n] = {kanji:k, color:c});
+CATS.forEach(([n,k,c]) => CAT_MAP[n] = {kanji:k, color:c, ink:ink(c)});
+
+// Gris de l'interface, tous ramenes a 4.5:1 sur le creme #faf9f6.
+const GREY = {
+  muted: '#76736a',   // etait #76736a — 2.83:1
+  soft:  '#777268',   // etait #777268 — 3.91:1
+  faint: '#76726b',   // etait #b3aea3 — 2.21:1
+  kana:  '#777267',   // etait #777267 — 3.68:1
+  ghost: '#939089'    // etait #939089 — 1.45:1 (titre 34px, seuil 3:1)
+};
 
 const TONE_STYLES = {
-  'positif': ['#00A65A','rgba(0,166,90,.1)'],
+  'positif': ['#007C43','rgba(0,166,90,.1)'],
   'négatif': ['#C6002B','rgba(198,0,43,.09)'],
-  'neutre' : ['#6E7B8B','rgba(110,123,139,.12)']
+  'neutre' : ['#5F6B79','rgba(110,123,139,.12)']
 };
 
 /* ------------------------------------------------------------ sélection */
@@ -193,14 +266,14 @@ function selectItems(){
       const n = list.filter(x => x.day === d.day).length;
       items.push({id:'h'+d.day, isHeader:true, isCard:false, label:'JOUR '+d.day, sub:n+' fiches'});
     }
-    const cm = CAT_MAP[d.cat] || {kanji:'?', color:'#888'};
+    const cm = CAT_MAP[d.cat] || {kanji:'?', color:'#888', ink:'#5c5c5c'};
     const done = mastered.includes(d.id);
     const isVocab  = !!d.fr && !!d.jp;
     const isHybrid = !isVocab && !!d.jp;
     const ts = TONE_STYLES[d.tone];
     items.push({
       ...d, isHeader:false, isCard:true,
-      kanji:cm.kanji, color:cm.color, catName:d.cat,
+      kanji:cm.kanji, color:cm.ink, catName:d.cat,
       isVocab, isHybrid, isPlain: !d.jp,
       hasKana: isVocab && !!d.kana, hasBody: !!d.body, hasMeta: !!d.meta,
       showRomaji: CONFIG.showRomaji && !!d.romaji,
@@ -217,17 +290,21 @@ function selectItems(){
 function tplHeader(it){
   return `<div style="display:flex;align-items:center;gap:10px;padding:6px 2px 0">
     <span style="background:#141414;color:#fff;border-radius:7px;padding:3px 9px;font:800 11px 'Hanken Grotesk';letter-spacing:.16em">${esc(it.label)}</span>
-    <span style="font:600 11px 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:#9a958a">${esc(it.sub)}</span>
+    <span style="font:600 11px 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:#76736a">${esc(it.sub)}</span>
     <span style="flex:1;height:1px;background:#e2dfd6"></span>
   </div>`;
 }
 
 function tplStamp(it){
+  // Le libelle doit dire de QUELLE fiche il s'agit : hors contexte visuel, une
+  // liste de 49 boutons « Marquer maitrise » est inexploitable au lecteur d'ecran.
+  const quoi = esc(it.jp || it.title);
+  const base = `data-stamp="${it.id}" type="button" aria-pressed="${it.mastered}"`;
   return it.mastered
-    ? `<div data-stamp="${it.id}" title="Retirer le tampon" style="position:absolute;top:7px;right:9px;width:62px;height:62px;border:2.5px solid #C6002B;border-radius:50%;display:grid;place-items:center;cursor:pointer;z-index:3;background:rgba(250,249,246,.8);animation:stampIn .4s cubic-bezier(.2,1.7,.5,1)">
-         <div style="text-align:center;color:#C6002B"><div style="font:900 17px 'Noto Sans JP';line-height:1">済</div><div style="font:800 6.5px 'Hanken Grotesk';letter-spacing:.14em">MAÎTRISÉ</div></div>
-       </div>`
-    : `<div class="stampOff" data-stamp="${it.id}" title="Marquer maîtrisé" style="position:absolute;top:10px;right:10px;width:33px;height:33px;border-radius:50%;border:1.6px dashed #cfcabd;display:grid;place-items:center;cursor:pointer;z-index:3;color:#b3aea3;font:700 13px 'Noto Sans JP';background:#fff;transition:border-color .15s,color .15s">済</div>`;
+    ? `<button ${base} class="hit" aria-label="Retirer le tampon de « ${quoi} »" style="position:absolute;top:7px;right:9px;width:62px;height:62px;border:2.5px solid #C6002B;border-radius:50%;display:grid;place-items:center;cursor:pointer;z-index:3;background:rgba(250,249,246,.8);animation:stampIn .4s cubic-bezier(.2,1.7,.5,1)">
+         <span style="text-align:center;color:#C6002B"><span style="display:block;font:900 17px 'Noto Sans JP';line-height:1">済</span><span style="display:block;font:800 6.5px 'Hanken Grotesk';letter-spacing:.14em">MAÎTRISÉ</span></span>
+       </button>`
+    : `<button ${base} class="stampOff hit" aria-label="Marquer « ${quoi} » comme maîtrisé" style="position:absolute;top:10px;right:10px;width:33px;height:33px;border-radius:50%;border:1.6px dashed #cfcabd;display:grid;place-items:center;cursor:pointer;z-index:3;color:#76726b;font:700 13px 'Noto Sans JP';background:#fff;transition:border-color .15s,color .15s">済</button>`;
 }
 
 const CHEV_L = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" opacity=".75"><path d="M15 5l-7 7 7 7"></path></svg>`;
@@ -236,7 +313,7 @@ const CHEV_R = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stro
 function tplVocab(it){
   return `<div style="padding:19px 52px 15px;text-align:center;position:relative;flex:1;display:flex;flex-direction:column;justify-content:center">
       <div style="position:absolute;top:13px;left:13px;width:29px;height:29px;border-radius:9px;background:${it.color};color:#fff;font:900 16px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
-      ${it.hasKana ? `<div style="font:500 12.5px 'Noto Sans JP';color:#8a8578;letter-spacing:.07em;margin-bottom:5px">${esc(it.kana)}</div>` : ''}
+      ${it.hasKana ? `<div style="font:500 12.5px 'Noto Sans JP';color:#777267;letter-spacing:.07em;margin-bottom:5px">${esc(it.kana)}</div>` : ''}
       <div style="font:700 27px 'Noto Sans JP';color:#111;line-height:1.2;letter-spacing:.01em">${esc(it.jp)}</div>
       ${it.showRomaji ? `<div style="font:700 13px 'Hanken Grotesk';letter-spacing:.15em;text-transform:uppercase;color:${it.color};margin-top:7px">${esc(it.romaji)}</div>` : ''}
     </div>
@@ -254,7 +331,7 @@ function tplHybrid(it){
           <span style="font:700 19px 'Noto Sans JP';color:#111">${esc(it.jp)}</span>
           <span style="font:700 11.5px 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:${it.color}">${esc(it.romaji)}</span>
         </div>
-        ${it.hasMeta ? `<div style="font:600 11px 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#9a958a;margin-bottom:4px">${esc(it.meta)}</div>` : ''}
+        ${it.hasMeta ? `<div style="font:600 11px 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#76736a;margin-bottom:4px">${esc(it.meta)}</div>` : ''}
         <div style="font:400 13px/1.55 'Hanken Grotesk';color:#5a564d">${esc(it.body)}</div>
       </div>
     </div>`;
@@ -283,7 +360,34 @@ function tplCard(it){
 }
 
 /* --------------------------------------------------------------- render */
+/* Un re-rendu remplace tout le innerHTML, donc l'element focalise disparait et
+   le focus retombe sur <body> : au clavier, on perd sa place a chaque filtre
+   active. On note quel controle etait focalise, puis on le retrouve apres. */
+function focusKey(){
+  const el = document.activeElement;
+  if (!el || el === document.body) return null;
+  for (const a of ['data-cat','data-seg','data-day','data-stamp']) {
+    if (el.hasAttribute?.(a)) return `[${a}="${el.getAttribute(a)}"]`;
+  }
+  return el.id ? '#' + el.id : null;
+}
+
+function restoreFocus(key, selStart, selEnd){
+  if (!key) return;
+  const el = document.querySelector(key);
+  if (!el) return;
+  el.focus({preventScroll:true});
+  if (selStart != null && el.setSelectionRange) {
+    try { el.setSelectionRange(selStart, selEnd); } catch (e) {}
+  }
+}
+
 function render(){
+  const key = focusKey();
+  const active = document.activeElement;
+  const selStart = active && active.id === 'q' ? active.selectionStart : null;
+  const selEnd   = active && active.id === 'q' ? active.selectionEnd   : null;
+
   const {data, items} = selectItems();
   const {query, cat, day, seg, mastered} = state;
 
@@ -297,75 +401,77 @@ function render(){
 
   const stripe = CATS.map(([n,k,c]) => `<span style="flex:1;background:${c}"></span>`).join('');
 
-  const catChips = [{key:'all',label:'Tout',kanji:'全',color:'#141414'},
-                    ...CATS.map(([n,k,c]) => ({key:n,label:n,kanji:k,color:c}))]
+  const catChips = [{key:'all',label:'Tout',kanji:'全',ink:'#141414'},
+                    ...CATS.map(([n,k,c]) => ({key:n,label:n,kanji:k,ink:CAT_MAP[n].ink}))]
     .map(c => {
       const active = cat === c.key;
-      return `<div data-cat="${esc(c.key)}" style="flex:none;display:flex;align-items:center;gap:7px;border-radius:999px;padding:5px 12px 5px 6px;cursor:pointer;background:${active?'#141414':'#fff'};border:1.5px solid ${active?'#141414':'#e6e3db'};transition:background .15s">
-        <span style="width:24px;height:24px;border-radius:7px;background:${c.color};color:#fff;font:900 14px 'Noto Sans JP';display:grid;place-items:center">${esc(c.kanji)}</span>
+      return `<button type="button" class="hit" data-cat="${esc(c.key)}" aria-pressed="${active}" style="flex:none;display:flex;align-items:center;gap:7px;border-radius:999px;padding:5px 12px 5px 6px;cursor:pointer;background:${active?'#141414':'#fff'};border:1.5px solid ${active?'#141414':'#e6e3db'};transition:background .15s">
+        <span aria-hidden="true" style="width:24px;height:24px;border-radius:7px;background:${c.ink};color:#fff;font:900 14px 'Noto Sans JP';display:grid;place-items:center">${esc(c.kanji)}</span>
         <span style="font:700 12.5px 'Hanken Grotesk';color:${active?'#fff':'#3a372f'}">${esc(c.label)}</span>
-      </div>`;
+      </button>`;
     }).join('');
 
   const segChips = [['all','Tout'],['todo','À voir'],['done','済 Fait']].map(([k,l]) =>
-    `<span data-seg="${k}" style="cursor:pointer;border-radius:999px;padding:5px 12px;font:700 12px 'Hanken Grotesk';background:${seg===k?'#141414':'transparent'};color:${seg===k?'#fff':'#7a756a'};box-shadow:${seg===k?'0 1px 3px rgba(0,0,0,.25)':'none'};transition:background .15s">${esc(l)}</span>`
+    `<button type="button" class="hit" data-seg="${k}" aria-pressed="${seg===k}" style="cursor:pointer;border-radius:999px;padding:5px 12px;font:700 12px 'Hanken Grotesk';background:${seg===k?'#141414':'transparent'};color:${seg===k?'#fff':'#706B62'};box-shadow:${seg===k?'0 1px 3px rgba(0,0,0,.25)':'none'};transition:background .15s">${esc(l)}</button>`
   ).join('');
 
   const dayNums = [...new Set(data.map(d => d.day || 1))].sort((a,b) => a-b);
   const dayChips = [{v:0,label:'Tous les jours'}, ...dayNums.map(n => ({v:n,label:'Jour '+n}))].map(d => {
     const active = day === d.v;
-    return `<span data-day="${d.v}" style="flex:none;cursor:pointer;border-radius:999px;padding:6px 13px;font:700 12px 'Hanken Grotesk';background:${active?'#fff':'transparent'};color:${active?'#141414':'#7a756a'};border:1.5px solid ${active?'#141414':'#dedbd1'}">${esc(d.label)}</span>`;
+    return `<button type="button" class="hit" data-day="${d.v}" aria-pressed="${active}" style="flex:none;cursor:pointer;border-radius:999px;padding:6px 13px;font:700 12px 'Hanken Grotesk';background:${active?'#fff':'transparent'};color:${active?'#141414':'#777268'};border:1.5px solid ${active?'#141414':'#dedbd1'}">${esc(d.label)}</button>`;
   }).join('');
 
   const feed = items.length
     ? items.map(it => it.isHeader
         ? `<div class="cell row-full">${tplHeader(it)}</div>`
         : `<div class="cell">${tplCard(it)}</div>`).join('')
-    : `<div class="row-full" style="text-align:center;padding:52px 20px;color:#9a958a">
-         <div style="font:900 34px 'Noto Sans JP';color:#d5d1c6">行き止まり</div>
+    : `<div class="row-full" style="text-align:center;padding:52px 20px;color:#76736a">
+         <div style="font:900 34px 'Noto Sans JP';color:#939089">行き止まり</div>
          <div style="font:600 13px 'Hanken Grotesk';margin-top:8px">Voie sans issue — aucune fiche ne correspond.</div>
-         <div id="reset" style="display:inline-block;margin-top:14px;cursor:pointer;font:700 13px 'Hanken Grotesk';color:#0079C2">Réinitialiser les filtres</div>
+         <div id="reset" style="display:inline-block;margin-top:14px;cursor:pointer;font:700 13px 'Hanken Grotesk';color:#0064A6">Réinitialiser les filtres</div>
        </div>`;
 
   document.getElementById('shell').innerHTML = `
-  <div class="gx" style="padding-top:18px;padding-bottom:14px">
+  <header class="gx" style="padding-top:18px;padding-bottom:14px">
     <div style="background:#141414;border-radius:16px;padding:16px 18px 15px;overflow:hidden">
       <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
-        <span class="jptitle" style="font:900 26px 'Noto Sans JP';color:#fff;letter-spacing:.02em">日本ブリーフィング</span>
-        <span style="font:800 15px 'Hanken Grotesk';color:#E60012;background:#fff;border-radius:7px;padding:2px 8px;letter-spacing:.04em">${esc(countdown)}</span>
+        <h1 class="jptitle" style="margin:0;font:900 26px 'Noto Sans JP';color:#fff;letter-spacing:.02em">日本ブリーフィング</h1>
+        <span class="tnum" style="font:800 15px 'Hanken Grotesk';color:#E60012;background:#fff;border-radius:7px;padding:2px 8px;letter-spacing:.04em">${esc(countdown)}</span>
       </div>
-      <div style="font:600 11px 'Hanken Grotesk';letter-spacing:.28em;text-transform:uppercase;color:#8f8a7e;margin-top:4px">Nihon briefing · ${esc(todayLabel)}</div>
-      <div style="display:flex;height:5px;margin-top:12px;border-radius:3px;overflow:hidden">${stripe}</div>
+      <p style="margin:4px 0 0;font:600 11px 'Hanken Grotesk';letter-spacing:.28em;text-transform:uppercase;color:#8f8a7e">Nihon briefing · ${esc(todayLabel)}</p>
+      <div aria-hidden="true" style="display:flex;height:5px;margin-top:12px;border-radius:3px;overflow:hidden">${stripe}</div>
     </div>
-  </div>
+  </header>
 
-  <div style="position:sticky;top:0;z-index:20;background:rgba(250,249,246,.93);backdrop-filter:blur(12px);border-bottom:1px solid #eceae3;padding:10px 0 11px;display:flex;flex-direction:column;gap:9px">
+  <nav aria-label="Recherche et filtres" style="position:sticky;top:0;z-index:20;background:rgba(250,249,246,.93);backdrop-filter:blur(12px);border-bottom:1px solid #eceae3;padding:10px 0 11px;display:flex;flex-direction:column;gap:9px">
     <div class="gx">
+      <label for="q" class="sr-only">Chercher une fiche</label>
       <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #1a1a1a;border-radius:12px;padding:0 14px;max-width:640px">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
-        <input id="q" value="${esc(query)}" placeholder="Chercher — « l'addition », 駅, motsunabe…" style="flex:1;border:none;outline:none;background:transparent;font:500 15px 'Hanken Grotesk';color:#1a1a1a;padding:12px 0">
-        ${query ? `<span id="clear" style="cursor:pointer;font:700 12px 'Hanken Grotesk';color:#9a958a;padding:4px">✕</span>` : ''}
+        <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+        <input id="q" type="search" enterkeyhint="search" autocomplete="off" value="${esc(query)}" placeholder="Chercher — « l'addition », 駅, motsunabe…" style="flex:1;border:none;outline:none;background:transparent;font-weight:500;font-family:'Hanken Grotesk';color:#1a1a1a;padding:12px 0">
+        ${query ? `<button type="button" id="clear" class="hit" aria-label="Effacer la recherche" style="cursor:pointer;font:700 12px 'Hanken Grotesk';color:#76736a;padding:4px">✕</button>` : ''}
       </div>
     </div>
-    <div class="hscroll gx chiprow" style="display:flex;gap:7px;overflow-x:auto;padding-top:1px;padding-bottom:1px">${catChips}</div>
+    <div class="hscroll gx chiprow" role="group" aria-label="Catégories" style="display:flex;gap:7px;overflow-x:auto;padding-top:1px;padding-bottom:1px">${catChips}</div>
     <div class="hscroll gx" style="display:flex;gap:7px;overflow-x:auto;align-items:center">
-      <div style="flex:none;display:flex;background:#efede6;border-radius:999px;padding:3px">${segChips}</div>
+      <div role="group" aria-label="État" style="flex:none;display:flex;background:#efede6;border-radius:999px;padding:3px">${segChips}</div>
       ${dayChips}
     </div>
-  </div>
+  </nav>
 
-  <div class="feed">${feed}</div>
+  <main class="feed" aria-live="polite" aria-busy="false">${feed}</main>
 
-  <div class="gx" style="position:sticky;bottom:0;z-index:20;background:#141414;padding-top:11px;padding-bottom:13px">
+  <div class="gx safe-bottom" style="position:sticky;bottom:0;z-index:20;background:#141414;padding-top:11px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px">
       <span style="font:700 12px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:#8f8a7e">Tampons collectés</span>
-      <span style="font:800 13px 'Hanken Grotesk';color:#fff">${doneCount} / ${data.length} <span style="color:#E60012;font-family:'Noto Sans JP'">済</span></span>
+      <span class="tnum" style="font:800 13px 'Hanken Grotesk';color:#fff">${doneCount} / ${data.length} <span aria-hidden="true" style="color:#EB3644;font-family:'Noto Sans JP'">済</span></span>
     </div>
-    <div style="height:6px;border-radius:3px;background:#2b2b2b;overflow:hidden">
+    <div role="progressbar" aria-label="Progression des tampons" aria-valuenow="${doneCount}" aria-valuemin="0" aria-valuemax="${data.length}" style="height:6px;border-radius:3px;background:#2b2b2b;overflow:hidden">
       <div style="height:100%;width:${pct};background:#E60012;border-radius:3px;transition:width .35s ease"></div>
     </div>
   </div>`;
 
+  restoreFocus(key, selStart, selEnd);
 }
 
 /* ---------------------------------------------------------------- events
@@ -378,11 +484,7 @@ function wire(){
   shell.addEventListener('input', e => {
     if (e.target.id !== 'q') return;
     state.query = e.target.value;
-    const pos = e.target.selectionStart;
-    render();
-    const next = document.getElementById('q');
-    next.focus();
-    next.setSelectionRange(pos, pos);
+    render();   // render() replace le focus et le curseur tout seul
   });
 
   shell.addEventListener('click', e => {
