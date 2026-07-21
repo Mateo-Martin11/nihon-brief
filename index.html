@@ -21,7 +21,7 @@
   a{color:#0064A6}a:hover{color:#005a91}
   input::placeholder{color:#76736a}
   .hscroll{scrollbar-width:none}.hscroll::-webkit-scrollbar{display:none}
-  @keyframes stampIn{0%{transform:rotate(-11deg) scale(2.2);opacity:0}60%{transform:rotate(-11deg) scale(.92);opacity:1}100%{transform:rotate(-11deg) scale(1);opacity:1}}
+  @keyframes stampIn{0%{transform:rotate(var(--rot,-11deg)) scale(2.2);opacity:0}60%{transform:rotate(var(--rot,-11deg)) scale(.92);opacity:1}100%{transform:rotate(var(--rot,-11deg)) scale(1);opacity:1}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   .stampOff:hover{border-color:#C6002B!important;color:#C6002B!important}
 
@@ -95,10 +95,44 @@
     *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
                          transition-duration:.01ms!important;scroll-behavior:auto!important}
   }
+
+  /* --- matiere ----------------------------------------------------------
+     Le fond exterieur recoit un grain de papier discret ; les cartes une
+     ombre de feuille posee plutot qu'une simple bordure. */
+  body{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .card{box-shadow:0 1px 2px rgba(30,26,20,.04),0 5px 16px rgba(30,26,20,.05)}
+
+  /* --- overlays (revision + carnet) -------------------------------------- */
+  .ov{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;overscroll-behavior:contain}
+  .ov-review{background:#141414}
+  .ov-book{background:rgba(16,14,12,.97)}
+  .rv-card{touch-action:none;user-select:none;-webkit-user-select:none;will-change:transform}
+  .rv-fly-r{transition:transform .34s ease-in,opacity .34s;transform:translate(130vw,-8vh) rotate(22deg)!important;opacity:0}
+  .rv-fly-l{transition:transform .34s ease-in,opacity .34s;transform:translate(-130vw,-8vh) rotate(-22deg)!important;opacity:0}
+  .rv-back{transition:transform .3s cubic-bezier(.2,1.5,.4,1)}
+  @keyframes rvIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+  @keyframes bkIn{from{transform:perspective(1200px) rotateY(16deg);opacity:.35}to{transform:none;opacity:1}}
+  .bk-page{transform-origin:left center;backface-visibility:hidden}
+  .bk-turn-out{transition:transform .3s ease-in,opacity .3s;transform:perspective(1200px) rotateY(-76deg);opacity:.1}
+  /* La couverture pivote opaque et disparait par sa tranche (backface) —
+     un fondu pendant la rotation ferait un effet fantome. */
+  .bk-cover{transform-origin:left center;transition:transform .95s cubic-bezier(.65,.05,.25,1);backface-visibility:hidden}
+  .bk-cover.open{transform:perspective(1500px) rotateY(-152deg);pointer-events:none}
+  .vtx{writing-mode:vertical-rl}
+  .kbd-hint{text-align:center;padding:0 0 12px;font:600 10.5px 'Hanken Grotesk';letter-spacing:.12em;color:#8f8a7e}
+  @media (hover:none){.kbd-hint{display:none}}
 </style>
 </head>
 <body>
 <div id="shell"></div>
+<!-- Les overlays vivent HORS de #shell : render() remplace le innerHTML du
+     shell, un overlay place dedans serait detruit a chaque frappe de filtre. -->
+<div id="overlays"></div>
+<!-- Filtre d'encre partage : bord irregulier de tampon hanko, reference par
+     filter:url(#ink) depuis le HTML comme depuis les SVG des tampons. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4"/></filter>
+</defs></svg>
 
 <script>
 /* ------------------------------------------------------------------ config */
@@ -171,7 +205,8 @@ const DATA = [
 
 /* ------------------------------------------------------------------ état */
 const STORE_KEY = 'nihon-briefing-mastered';
-const state = { query:'', cat:'all', day:0, seg:'all', mastered:loadMastered() };
+const state = { query:'', cat:'all', day:0, seg:'all', mastered:loadMastered(),
+                review:null, book:null };
 
 function loadMastered(){
   try { const m = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); return Array.isArray(m) ? m : []; }
@@ -239,12 +274,12 @@ const TONE_STYLES = {
 };
 
 /* ------------------------------------------------------------ sélection */
-function selectItems(){
+/* Partage entre le feed et le deck de revision : le mode revision herite
+   exactement des filtres actifs (categorie, jour, etat, recherche). */
+function getFiltered(){
   const {query, cat, day, seg, mastered} = state;
-  const data = DATA.map(d => ({...d, day: d.day || 1}));
   const q = norm(query);
-
-  const list = data.filter(d => {
+  return DATA.map(d => ({...d, day: d.day || 1})).filter(d => {
     if (cat !== 'all' && d.cat !== cat) return false;
     if (day !== 0 && d.day !== day) return false;
     const done = mastered.includes(d.id);
@@ -257,6 +292,12 @@ function selectItems(){
     }
     return true;
   });
+}
+
+function selectItems(){
+  const {mastered} = state;
+  const data = DATA.map(d => ({...d, day: d.day || 1}));
+  const list = getFiltered();
 
   const items = [];
   let lastDay = null;
@@ -300,8 +341,11 @@ function tplStamp(it){
   // liste de 49 boutons « Marquer maitrise » est inexploitable au lecteur d'ecran.
   const quoi = esc(it.jp || it.title);
   const base = `data-stamp="${it.id}" type="button" aria-pressed="${it.mastered}"`;
+  // Chaque tampon a son propre angle, derive de l'id : un vrai hanko ne tombe
+  // jamais droit, et jamais deux fois pareil. Le filtre #ink rend le bord d'encre.
+  const rot = (srand(it.id, 4) * 12 - 16).toFixed(1);
   return it.mastered
-    ? `<button ${base} class="hit" aria-label="Retirer le tampon de « ${quoi} »" style="position:absolute;top:7px;right:9px;width:62px;height:62px;border:2.5px solid #C6002B;border-radius:50%;display:grid;place-items:center;cursor:pointer;z-index:3;background:rgba(250,249,246,.8);animation:stampIn .4s cubic-bezier(.2,1.7,.5,1)">
+    ? `<button ${base} class="hit" aria-label="Retirer le tampon de « ${quoi} »" style="--rot:${rot}deg;position:absolute;top:7px;right:9px;width:62px;height:62px;border:2.5px solid #C6002B;border-radius:50%;display:grid;place-items:center;cursor:pointer;z-index:3;background:rgba(250,249,246,.8);filter:url(#ink);animation:stampIn .4s cubic-bezier(.2,1.7,.5,1) both">
          <span style="text-align:center;color:#C6002B"><span style="display:block;font:900 17px 'Noto Sans JP';line-height:1">済</span><span style="display:block;font:800 6.5px 'Hanken Grotesk';letter-spacing:.14em">MAÎTRISÉ</span></span>
        </button>`
     : `<button ${base} class="stampOff hit" aria-label="Marquer « ${quoi} » comme maîtrisé" style="position:absolute;top:10px;right:10px;width:33px;height:33px;border-radius:50%;border:1.6px dashed #cfcabd;display:grid;place-items:center;cursor:pointer;z-index:3;color:#76726b;font:700 13px 'Noto Sans JP';background:#fff;transition:border-color .15s,color .15s">済</button>`;
@@ -461,14 +505,18 @@ function render(){
 
   <main class="feed" aria-live="polite" aria-busy="false">${feed}</main>
 
-  <div class="gx safe-bottom" style="position:sticky;bottom:0;z-index:20;background:#141414;padding-top:11px">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px">
-      <span style="font:700 12px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:#8f8a7e">Tampons collectés</span>
-      <span class="tnum" style="font:800 13px 'Hanken Grotesk';color:#fff">${doneCount} / ${data.length} <span aria-hidden="true" style="color:#EB3644;font-family:'Noto Sans JP'">済</span></span>
-    </div>
-    <div role="progressbar" aria-label="Progression des tampons" aria-valuenow="${doneCount}" aria-valuemin="0" aria-valuemax="${data.length}" style="height:6px;border-radius:3px;background:#2b2b2b;overflow:hidden">
+  <div class="gx safe-bottom" style="position:sticky;bottom:0;z-index:20;background:#141414;padding-top:9px;padding-bottom:9px;display:flex;align-items:center;gap:12px">
+    <button type="button" id="btn-book" class="hit" aria-label="Ouvrir le carnet de tampons — ${doneCount} sur ${data.length}" style="flex:none;display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 11px 8px 9px;border-radius:10px;background:#1f1f1f">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.4" fill="none" stroke="#EB3644" stroke-width="1.8" stroke-dasharray="3.4 2.4"/><text x="12" y="16.2" text-anchor="middle" font-size="10.5" font-weight="900" fill="#EB3644" font-family="'Noto Sans JP',sans-serif">済</text></svg>
+      <span class="tnum" style="font:800 13px 'Hanken Grotesk';color:#fff">${doneCount}<span style="color:#8f8a7e">/${data.length}</span></span>
+    </button>
+    <div role="progressbar" aria-label="Progression des tampons" aria-valuenow="${doneCount}" aria-valuemin="0" aria-valuemax="${data.length}" style="flex:1;height:5px;border-radius:3px;background:#2b2b2b;overflow:hidden">
       <div style="height:100%;width:${pct};background:#E60012;border-radius:3px;transition:width .35s ease"></div>
     </div>
+    <button type="button" id="btn-review" class="hit" aria-label="Lancer le mode révision" style="flex:none;cursor:pointer;display:flex;align-items:center;gap:8px;background:#E60012;color:#fff;border-radius:10px;padding:9px 14px">
+      <span style="font:900 14px 'Noto Sans JP'">復習</span>
+      <span style="font:800 12px 'Hanken Grotesk';letter-spacing:.08em">RÉVISER</span>
+    </button>
   </div>`;
 
   restoreFocus(key, selStart, selEnd);
@@ -499,12 +547,381 @@ function wire(){
     if (seg) { state.seg = seg.dataset.seg; return render(); }
     const day = e.target.closest('[data-day]');
     if (day) { state.day = Number(day.dataset.day); return render(); }
+    if (e.target.closest('#btn-review')) return openReview();
+    if (e.target.closest('#btn-book'))   return openBook();
     const stamp = e.target.closest('[data-stamp]');
     if (stamp) { toggle(Number(stamp.dataset.stamp)); }
   });
 }
 
+/* =========================================================================
+   ALEA DETERMINISTE — chaque fiche a une "personnalite" stable (angle, forme,
+   taille de tampon) derivee de son id. Pas de Math.random : le carnet doit
+   etre identique a chaque ouverture et d'un appareil a l'autre.
+   ========================================================================= */
+function srand(id, n){
+  const x = Math.sin(id * 127.1 + n * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/* =========================================================================
+   MODE REVISION — pile de cartes plein ecran, geste ou boutons.
+   Droite / → : je savais (tamponne). Gauche / ← : a revoir (remise en fin
+   de pile). Tap / espace : reveler la reponse. Le deck herite des filtres.
+   ========================================================================= */
+function openReview(){
+  const deck = getFiltered().map(d => d.id);
+  // melange de Fisher-Yates — l'ordre de la liste serait trop previsible
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  state.book = null;
+  state.review = {deck, i:0, revealed:false, stamped:0};
+  renderOverlays();
+}
+
+function reviewCard(){
+  const r = state.review;
+  if (!r || r.i >= r.deck.length) return null;
+  return DATA.find(d => d.id === r.deck[r.i]);
+}
+
+function reviewAct(action){
+  const r = state.review, d = reviewCard();
+  if (!d) return;
+  if (action === 'know') {
+    // tamponne, mais ne DE-tamponne jamais une fiche deja maitrisee
+    if (!state.mastered.includes(d.id)) { toggle(d.id); r.stamped++; }
+  } else {
+    r.deck.push(d.id);   // « a revoir » : la fiche reviendra en fin de pile
+  }
+  r.i++; r.revealed = false;
+  renderOverlays();
+}
+
+function tplRvInner(d, revealed){
+  const cm = CAT_MAP[d.cat] || {kanji:'?', ink:'#5c5c5c'};
+  const ts = TONE_STYLES[d.tone];
+  const head = `<div style="display:flex;justify-content:center;margin-bottom:16px"><span style="display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="width:26px;height:26px;border-radius:8px;background:${cm.ink};color:#fff;font:900 14px 'Noto Sans JP';display:grid;place-items:center">${esc(cm.kanji)}</span><span style="font:700 11px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:${cm.ink}">${esc(d.cat)}</span></span></div>`;
+  let front;
+  if (d.jp) {
+    front = `${d.kana ? `<div style="font:500 15px 'Noto Sans JP';color:#777267;letter-spacing:.06em;margin-bottom:8px">${esc(d.kana)}</div>` : ''}
+      <div style="font:700 ${d.jp.length > 6 ? 32 : 42}px 'Noto Sans JP';color:#111;line-height:1.25">${esc(d.jp)}</div>
+      ${CONFIG.showRomaji && d.romaji ? `<div style="font:700 14px 'Hanken Grotesk';letter-spacing:.16em;text-transform:uppercase;color:${cm.ink};margin-top:10px">${esc(d.romaji)}</div>` : ''}
+      ${d.meta ? `<div style="font:600 11px 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#76736a;margin-top:8px">${esc(d.meta)}</div>` : ''}`;
+  } else {
+    front = `<div style="font:700 21px/1.35 'Hanken Grotesk';color:#111">${esc(d.title)}</div>
+      ${d.tone && ts ? `<div style="margin-top:10px"><span style="font:700 10.5px 'Hanken Grotesk';letter-spacing:.08em;color:${ts[0]};background:${ts[1]};border-radius:5px;padding:2px 8px">${esc(d.tone)}</span></div>` : ''}`;
+  }
+  const answer = d.fr
+    ? `<div style="background:${cm.ink};border-radius:12px;padding:12px 18px;font:600 17px 'Hanken Grotesk';color:#fff">${esc(d.fr)}</div>
+       ${d.body ? `<div style="margin-top:12px;font:400 14px/1.6 'Hanken Grotesk';color:#5a564d">${esc(d.body)}</div>` : ''}`
+    : `<div style="font:400 15px/1.65 'Hanken Grotesk';color:#3f3c35;text-align:left">${esc(d.body || '')}</div>`;
+  return head + `<div style="text-align:center">${front}</div>` + (revealed
+    ? `<div data-answer style="margin-top:22px;text-align:center;animation:fadeUp .25s ease both">${answer}</div>`
+    : `<div style="margin-top:24px;text-align:center;font:600 11.5px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:#76736a">Tape pour révéler</div>`);
+}
+
+function tplReview(){
+  const r = state.review;
+  const remain = r.deck.length - r.i;
+  const top = `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px">
+    <button type="button" id="rv-close" class="hit" aria-label="Fermer la révision" style="width:44px;height:44px;cursor:pointer;color:#fff;font:700 16px 'Hanken Grotesk'">✕</button>
+    <span style="font:900 16px 'Noto Sans JP';color:#fff">復習<span style="font:700 11px 'Hanken Grotesk';color:#8f8a7e;margin-left:8px;letter-spacing:.16em">RÉVISION</span></span>
+    <span class="tnum" style="font:700 12px 'Hanken Grotesk';color:#8f8a7e;min-width:44px;text-align:right">${remain}</span>
+  </div>
+  <div style="margin:0 18px;height:3px;border-radius:2px;background:#2b2b2b;overflow:hidden"><div style="height:100%;width:${r.deck.length ? Math.round(r.i / r.deck.length * 100) : 0}%;background:#E60012;transition:width .3s"></div></div>`;
+
+  if (!r.deck.length) {
+    return `<div class="ov ov-review" role="dialog" aria-modal="true" aria-label="Mode révision">${top}
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center">
+        <div style="font:900 30px 'Noto Sans JP';color:#3a3a3a">空っぽ</div>
+        <div style="font:600 13px 'Hanken Grotesk';color:#a5a094">Aucune fiche ne correspond aux filtres actifs.</div>
+        <button type="button" id="rv-close2" data-autofocus class="hit" style="cursor:pointer;background:#2b2b2b;color:#fff;border-radius:10px;padding:11px 18px;font:800 13px 'Hanken Grotesk'">Fermer</button>
+      </div></div>`;
+  }
+
+  if (r.i >= r.deck.length) {
+    return `<div class="ov ov-review" role="dialog" aria-modal="true" aria-label="Révision terminée">${top}
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center">
+        <div aria-hidden="true" style="width:96px;height:96px;border:3px solid #EB3644;border-radius:50%;display:grid;place-items:center;filter:url(#ink);animation:stampIn .5s cubic-bezier(.2,1.7,.5,1) both">
+          <span style="color:#EB3644;font:900 36px 'Noto Sans JP';line-height:1">済</span>
+        </div>
+        <div style="font:900 24px 'Noto Sans JP';color:#fff">お疲れさま！</div>
+        <div style="font:600 13px 'Hanken Grotesk';color:#a5a094">Session terminée — ${r.stamped} nouveau${r.stamped > 1 ? 'x' : ''} tampon${r.stamped > 1 ? 's' : ''}</div>
+        <div style="display:flex;gap:12px;margin-top:6px">
+          <button type="button" id="rv-restart" data-autofocus class="hit" style="cursor:pointer;background:#E60012;color:#fff;border-radius:10px;padding:11px 18px;font:800 13px 'Hanken Grotesk'">Encore une session</button>
+          <button type="button" id="rv-close3" class="hit" style="cursor:pointer;background:#2b2b2b;color:#fff;border-radius:10px;padding:11px 18px;font:800 13px 'Hanken Grotesk'">Fermer</button>
+        </div>
+      </div></div>`;
+  }
+
+  const d = reviewCard();
+  const ghost = (dy, sc, op) => `<div aria-hidden="true" style="position:absolute;inset:0;margin:auto;width:min(84vw,400px);height:300px;background:#fff;border-radius:20px;transform:translateY(${dy}px) scale(${sc});opacity:${op};box-shadow:0 18px 44px rgba(0,0,0,.3)"></div>`;
+  return `<div class="ov ov-review" role="dialog" aria-modal="true" aria-label="Mode révision">${top}
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:10px 20px 4px;position:relative;min-height:0">
+      ${remain > 2 ? ghost(26, .9, .22) : ''}${remain > 1 ? ghost(14, .95, .45) : ''}
+      <div id="rv-card" class="rv-card" data-swipe style="position:relative;width:min(88vw,420px);max-height:100%;overflow-y:auto;background:#fff;border-radius:20px;padding:28px 26px 26px;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:rvIn .3s ease both;cursor:pointer">
+        <div data-hint-r aria-hidden="true" style="position:absolute;top:14px;left:14px;transform:rotate(-12deg);border:3px solid #00884A;color:#00884A;border-radius:8px;padding:2px 10px;font:900 13px 'Hanken Grotesk';letter-spacing:.06em;opacity:0;pointer-events:none">済 JE SAVAIS</div>
+        <div data-hint-l aria-hidden="true" style="position:absolute;top:14px;right:14px;transform:rotate(12deg);border:3px solid #957100;color:#957100;border-radius:8px;padding:2px 10px;font:900 13px 'Hanken Grotesk';letter-spacing:.06em;opacity:0;pointer-events:none">À REVOIR</div>
+        ${tplRvInner(d, r.revealed)}
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;align-items:center;gap:16px;padding:16px 20px 10px">
+      <button type="button" id="rv-again-btn" class="hit" aria-label="À revoir plus tard" style="width:54px;height:54px;border-radius:50%;cursor:pointer;background:#fff;display:grid;place-items:center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#957100" stroke-width="2.4" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.3"/><path d="M3 2v5h5"/></svg>
+      </button>
+      <button type="button" id="rv-reveal" class="hit" aria-label="Révéler la réponse" ${r.revealed ? 'disabled' : ''} style="height:54px;padding:0 24px;border-radius:27px;cursor:pointer;background:#2b2b2b;color:#fff;font:800 13px 'Hanken Grotesk';letter-spacing:.06em;${r.revealed ? 'opacity:.45;cursor:default' : ''}">${r.revealed ? 'RÉVÉLÉ' : 'RÉVÉLER'}</button>
+      <button type="button" id="rv-know" class="hit" aria-label="Je savais — tamponner" style="width:54px;height:54px;border-radius:50%;cursor:pointer;background:#E60012;color:#fff;font:900 20px 'Noto Sans JP';display:grid;place-items:center">済</button>
+    </div>
+    <div class="kbd-hint">← À REVOIR · ESPACE RÉVÉLER · → JE SAVAIS</div>
+    <span class="sr-only" aria-live="polite">${remain} fiche${remain > 1 ? 's' : ''} restante${remain > 1 ? 's' : ''}. ${esc(d.jp || d.title)}</span>
+  </div>`;
+}
+
+/* =========================================================================
+   CARNET DE TAMPONS — un livre qui s'ouvre, des pages qui tournent, et un
+   tampon unique par fiche : forme, taille, angle et couleur derives de l'id,
+   kanji de categorie au centre, romaji grave en arc pour les fiches de langue.
+   ========================================================================= */
+function stampSVG(d, got){
+  const cm = CAT_MAP[d.cat] || {kanji:'?', ink:'#5c5c5c'};
+  const s = n => srand(d.id, n);
+  const px = [58, 68, 80][Math.floor(s(3) * 2.999)];
+  const rot = (s(2) * 16 - 8).toFixed(1);
+  const shapeR = s(1);
+  const glyph = (d.cat === 'Kanji' && d.jp) ? d.jp : cm.kanji;
+  const ink = cm.ink;
+  const uid = 'st' + d.id;
+  let shape;
+  if (shapeR < .55) {
+    shape = got
+      ? `<circle cx="50" cy="50" r="46" fill="${ink}"/><circle cx="50" cy="50" r="38" fill="none" stroke="#fff" stroke-width="1.6" opacity=".85"/>`
+      : `<circle cx="50" cy="50" r="46" fill="none" stroke="${ink}" stroke-width="2.4" stroke-dasharray="5 4" opacity=".5"/>`;
+  } else if (shapeR < .82) {
+    shape = got
+      ? `<rect x="7" y="7" width="86" height="86" rx="14" fill="${ink}"/><rect x="14" y="14" width="72" height="72" rx="9" fill="none" stroke="#fff" stroke-width="1.6" opacity=".85"/>`
+      : `<rect x="7" y="7" width="86" height="86" rx="14" fill="none" stroke="${ink}" stroke-width="2.4" stroke-dasharray="5 4" opacity=".5"/>`;
+  } else {
+    shape = got
+      ? `<polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="${ink}"/><polygon points="50,12 83,31 83,69 50,88 17,69 17,31" fill="none" stroke="#fff" stroke-width="1.6" opacity=".85"/>`
+      : `<polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="none" stroke="${ink}" stroke-width="2.4" stroke-dasharray="5 4" opacity=".5"/>`;
+  }
+  const arc = (got && shapeR < .55 && (d.romaji || d.cat))
+    ? `<defs><path id="${uid}" d="M50,50 m-31,0 a31,31 0 1,1 62,0 a31,31 0 1,1 -62,0"/></defs>
+       <text font-family="'Hanken Grotesk',sans-serif" font-size="7.5" font-weight="800" letter-spacing="1.6" fill="#fff" opacity=".9"><textPath href="#${uid}">${esc(((d.romaji || d.cat).toUpperCase() + ' · ').repeat(3).slice(0, 30))}</textPath></text>`
+    : '';
+  const kanji = `<text x="50" y="50" dy="0.36em" text-anchor="middle" font-family="'Noto Sans JP',sans-serif" font-weight="900" font-size="${glyph.length > 1 ? 24 : 32}" fill="${got ? '#fff' : ink}"${got ? '' : ' opacity=".28"'}>${esc(glyph)}</text>`;
+  return `<svg viewBox="0 0 100 100" width="${px}" height="${px}" aria-hidden="true" style="transform:rotate(${rot}deg);${got ? 'filter:url(#ink)' : ''}">${shape}${arc}${kanji}</svg>`;
+}
+
+function bookPages(){
+  const list = [];
+  for (const [n] of CATS) list.push(...DATA.filter(d => d.cat === n));
+  const pages = [{type:'summary'}];
+  for (let i = 0; i < list.length; i += 9) pages.push({type:'stamps', items:list.slice(i, i + 9)});
+  return pages;
+}
+
+function openBook(){
+  state.review = null;
+  state.book = {page:0, opened:false};
+  renderOverlays();
+  // double rAF : la couverture doit etre peinte fermee avant de s'ouvrir
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.getElementById('bk-cover')?.classList.add('open');
+    setTimeout(() => { if (state.book) state.book.opened = true; }, 1000);
+  }));
+}
+
+function bookTurn(dir){
+  const b = state.book;
+  if (!b) return;
+  const N = bookPages().length;
+  const np = b.page + dir;
+  if (np < 0 || np >= N) return;
+  b.opened = true;
+  const el = document.getElementById('bk-page');
+  const rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (el && !rm) {
+    el.classList.add('bk-turn-out');
+    setTimeout(() => { if (state.book) { state.book.page = np; renderOverlays(); } }, 280);
+  } else {
+    b.page = np; renderOverlays();
+  }
+}
+
+function tplBkSummary(){
+  const doneIds = state.mastered.filter(id => DATA.some(d => d.id === id));
+  const rows = CATS.map(([n, k]) => {
+    const tot = DATA.filter(d => d.cat === n).length;
+    const got = DATA.filter(d => d.cat === n && doneIds.includes(d.id)).length;
+    const full = got === tot && tot > 0;
+    return `<div style="display:flex;align-items:center;gap:6px;min-width:0">
+      <span aria-hidden="true" style="flex:none;width:18px;height:18px;border-radius:5px;background:${CAT_MAP[n].ink};color:#fff;font:900 10px 'Noto Sans JP';display:grid;place-items:center">${esc(k)}</span>
+      <span style="flex:1;font:600 10.5px 'Hanken Grotesk';color:#3f3c35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(n)}</span>
+      <span class="tnum" style="font:800 10.5px ${full ? "'Noto Sans JP'" : "'Hanken Grotesk'"};color:${full ? '#C6002B' : '#76736a'}">${full ? '完' : got + '/' + tot}</span>
+    </div>`;
+  }).join('');
+  return `<div style="text-align:center;border-bottom:2px solid #1a1a1a;padding-bottom:11px;margin-bottom:12px">
+    <div style="font:900 22px 'Noto Sans JP';color:#111">スタンプ帳</div>
+    <div style="font:700 10px 'Hanken Grotesk';letter-spacing:.26em;color:#76736a;margin-top:2px">CARNET DE TAMPONS</div>
+    <div class="tnum" style="margin-top:8px;font:900 30px 'Hanken Grotesk';color:#C6002B">${doneIds.length}<span style="font-size:15px;color:#76736a"> / ${DATA.length}</span></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 12px">${rows}</div>`;
+}
+
+function tplBkStamps(items){
+  return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px 4px;height:100%;align-content:space-evenly;justify-items:center">
+    ${items.map(d => {
+      const got = state.mastered.includes(d.id);
+      const caption = d.jp || d.title;
+      return `<div data-stampslot style="text-align:center;width:100%;min-width:0">
+        <div style="height:88px;display:grid;place-items:center">${stampSVG(d, got)}</div>
+        <div style="font:600 9.5px 'Hanken Grotesk','Noto Sans JP',sans-serif;color:#76736a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px" title="${esc(caption)}">${esc(caption)}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function tplBook(){
+  const b = state.book;
+  const pages = bookPages();
+  const N = pages.length;
+  const pg = pages[b.page];
+  const inner = pg.type === 'summary' ? tplBkSummary() : tplBkStamps(pg.items);
+  const cover = b.opened ? '' : `<div class="bk-cover" id="bk-cover" style="position:absolute;inset:0;background:linear-gradient(135deg,#221f1b,#131210);border-radius:6px 14px 14px 6px;z-index:5;display:flex;align-items:center;justify-content:center">
+    <div aria-hidden="true" style="position:absolute;inset:10px;border:1px solid rgba(255,255,255,.13);border-radius:4px 10px 10px 4px"></div>
+    <div class="vtx" style="background:#f6f3ea;border:1px solid #d9d4c5;border-radius:4px;padding:18px 9px;font:700 15px 'Noto Sans JP';color:#1a1a1a;letter-spacing:.22em">日本ブリーフィング</div>
+    <div aria-hidden="true" style="position:absolute;bottom:22px;right:22px;width:40px;height:40px;border-radius:8px;background:#C6002B;color:#fff;display:grid;place-items:center;font:900 20px 'Noto Sans JP';transform:rotate(-6deg);filter:url(#ink)">済</div>
+  </div>`;
+  return `<div class="ov ov-book" role="dialog" aria-modal="true" aria-label="Carnet de tampons" style="align-items:center;justify-content:center">
+    <button type="button" id="bk-close" data-autofocus class="hit" aria-label="Fermer le carnet" style="position:absolute;top:12px;right:12px;width:44px;height:44px;cursor:pointer;color:#fff;font:700 16px 'Hanken Grotesk'">✕</button>
+    <div style="perspective:1500px">
+      <div data-pageswipe style="position:relative;width:min(88vw,340px);height:min(72dvh,500px);background:#fbfaf5;border-radius:6px 14px 14px 6px;box-shadow:0 30px 70px rgba(0,0,0,.55),inset 9px 0 16px -9px rgba(30,26,20,.28);overflow:hidden;touch-action:pan-y">
+        <div class="bk-page" id="bk-page" style="position:absolute;inset:0;padding:20px 18px;animation:bkIn .3s ease both">${inner}</div>
+        ${cover}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:18px;margin-top:16px">
+      <button type="button" id="bk-prev" class="hit" aria-label="Page précédente" ${b.page === 0 ? 'disabled' : ''} style="width:44px;height:44px;border-radius:50%;cursor:pointer;background:#2b2b2b;display:grid;place-items:center;${b.page === 0 ? 'opacity:.35;cursor:default' : ''}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <span class="tnum" style="font:700 12px 'Hanken Grotesk';color:#cfcabd">${b.page + 1} / ${N}</span>
+      <button type="button" id="bk-next" class="hit" aria-label="Page suivante" ${b.page === N - 1 ? 'disabled' : ''} style="width:44px;height:44px;border-radius:50%;cursor:pointer;background:#2b2b2b;display:grid;place-items:center;${b.page === N - 1 ? 'opacity:.35;cursor:default' : ''}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   RENDU ET CABLAGE DES OVERLAYS
+   ========================================================================= */
+function renderOverlays(){
+  const root = document.getElementById('overlays');
+  const prevFocus = document.activeElement?.id;
+  if (state.review)    root.innerHTML = tplReview();
+  else if (state.book) root.innerHTML = tplBook();
+  else { root.innerHTML = ''; return; }
+  const back = prevFocus && root.querySelector('#' + prevFocus);
+  if (back && !back.disabled) back.focus({preventScroll:true});
+  else root.querySelector('[data-autofocus]')?.focus({preventScroll:true});
+}
+
+function closeOverlays(){
+  const opener = state.review ? 'btn-review' : 'btn-book';
+  state.review = null; state.book = null;
+  renderOverlays();
+  document.getElementById(opener)?.focus();
+}
+
+function trapTab(e, root){
+  if (e.key !== 'Tab') return;
+  const f = [...root.querySelectorAll('button:not([disabled]),[href],input')].filter(el => el.offsetParent !== null);
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+  else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+}
+
+function wireOverlays(){
+  const root = document.getElementById('overlays');
+  let drag = null, dragMoved = false;
+
+  root.addEventListener('click', e => {
+    if (dragMoved) { dragMoved = false; return; }   // clic fantome apres un swipe
+    if (e.target.closest('#rv-close,#rv-close2,#rv-close3,#bk-close')) return closeOverlays();
+    if (e.target.closest('#rv-restart'))  return openReview();
+    if (e.target.closest('#rv-reveal') && !e.target.closest('#rv-reveal').disabled) { state.review.revealed = true; return renderOverlays(); }
+    if (e.target.closest('#rv-know'))     return reviewAct('know');
+    if (e.target.closest('#rv-again-btn')) return reviewAct('again');
+    const nx = e.target.closest('#bk-next'), pv = e.target.closest('#bk-prev');
+    if (nx && !nx.disabled) return bookTurn(1);
+    if (pv && !pv.disabled) return bookTurn(-1);
+    if (e.target.closest('#rv-card') && state.review && !state.review.revealed) {
+      state.review.revealed = true; renderOverlays();
+    }
+  });
+
+  root.addEventListener('pointerdown', e => {
+    const card = e.target.closest('[data-swipe]');
+    const page = e.target.closest('[data-pageswipe]');
+    if ((!card && !page) || e.target.closest('button')) return;
+    drag = {el: card || page, isCard: !!card, x0: e.clientX, y0: e.clientY, dx: 0};
+    dragMoved = false;
+    drag.el.classList.remove('rv-back');
+    drag.el.setPointerCapture?.(e.pointerId);
+  });
+
+  root.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+    drag.dx = dx;
+    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) dragMoved = true;
+    if (drag.isCard) {
+      drag.el.style.transform = `translate(${dx}px,${dy * .25}px) rotate(${dx * .05}deg)`;
+      const hr = drag.el.querySelector('[data-hint-r]'), hl = drag.el.querySelector('[data-hint-l]');
+      if (hr) hr.style.opacity = Math.min(1, Math.max(0, dx / 110));
+      if (hl) hl.style.opacity = Math.min(1, Math.max(0, -dx / 110));
+    }
+  });
+
+  const endDrag = e => {
+    if (!drag) return;
+    const {el, isCard, dx} = drag;
+    drag = null;
+    const rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isCard) {
+      if (dx > 95)       { el.classList.add('rv-fly-r'); setTimeout(() => reviewAct('know'),  rm ? 0 : 300); }
+      else if (dx < -95) { el.classList.add('rv-fly-l'); setTimeout(() => reviewAct('again'), rm ? 0 : 300); }
+      else { el.classList.add('rv-back'); el.style.transform = ''; }
+    } else if (Math.abs(dx) > 60) {
+      bookTurn(dx < 0 ? 1 : -1);
+    }
+  };
+  root.addEventListener('pointerup', endDrag);
+  root.addEventListener('pointercancel', endDrag);
+
+  document.addEventListener('keydown', e => {
+    const dlg = root.querySelector('[role="dialog"]');
+    if (!dlg) return;
+    if (e.key === 'Escape') { e.preventDefault(); return closeOverlays(); }
+    trapTab(e, dlg);
+    if (state.review) {
+      if (e.key === ' ')           { e.preventDefault(); if (reviewCard() && !state.review.revealed) { state.review.revealed = true; renderOverlays(); } }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); if (reviewCard()) reviewAct('know'); }
+      else if (e.key === 'ArrowLeft')  { e.preventDefault(); if (reviewCard()) reviewAct('again'); }
+    } else if (state.book) {
+      if (e.key === 'ArrowRight') { e.preventDefault(); bookTurn(1); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); bookTurn(-1); }
+    }
+  });
+}
+
 wire();
+wireOverlays();
 render();
 
 /* ------------------------------------------------------------------- PWA
