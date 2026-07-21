@@ -462,8 +462,6 @@ function render(){
   const doneCount = mastered.filter(id => data.some(d => d.id === id)).length;
   const pct = Math.round(doneCount / data.length * 100) + '%';
 
-  const stripe = CATS.map(([n,k,c]) => `<span style="flex:1;background:${c}"></span>`).join('');
-
   const catChips = [{key:'all',label:'Tout',kanji:'全',ink:'#141414'},
                     ...CATS.map(([n,k,c]) => ({key:n,label:n,kanji:k,ink:CAT_MAP[n].ink}))]
     .map(c => {
@@ -497,9 +495,14 @@ function render(){
   document.getElementById('shell').innerHTML = `
   <header class="gx" style="padding-top:18px;padding-bottom:14px">
     <div style="background:#141414;border-radius:16px;padding:16px 18px 15px;overflow:hidden">
-      <h1 class="jptitle" style="margin:0;font:900 26px 'Noto Sans JP';color:#fff;letter-spacing:.02em">日本ブリーフィング</h1>
-      <p style="margin:4px 0 0;font:600 11px 'Hanken Grotesk';letter-spacing:.28em;text-transform:uppercase;color:#8f8a7e">Nihon briefing · ${esc(todayLabel)}</p>
-      <div aria-hidden="true" style="display:flex;height:5px;margin-top:12px;border-radius:3px;overflow:hidden">${stripe}</div>
+      <div style="display:flex;align-items:center;gap:11px">
+        <span aria-hidden="true" style="flex:none;width:34px;height:34px;border-radius:9px;background:#E60012;color:#fff;font:900 20px 'Noto Sans JP';display:grid;place-items:center">日</span>
+        <div style="min-width:0">
+          <h1 class="jptitle" style="margin:0;font:900 25px/1.15 'Noto Sans JP';color:#fff;letter-spacing:.02em">日本ブリーフィング</h1>
+          <p style="margin:3px 0 0;font:600 10.5px 'Hanken Grotesk';letter-spacing:.26em;text-transform:uppercase;color:#8f8a7e">Nihon briefing · ${esc(todayLabel)}</p>
+        </div>
+      </div>
+      <div aria-hidden="true" style="height:5px;margin-top:13px;border-radius:3px;background:#E60012"></div>
     </div>
   </header>
 
