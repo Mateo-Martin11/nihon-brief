@@ -160,7 +160,6 @@
 <script>
 /* ------------------------------------------------------------------ config */
 const CONFIG = {
-  tripDate: '2026-08-04',   // date de départ — pilote le compte à rebours
   showRomaji: true
 };
 
@@ -458,9 +457,6 @@ function render(){
   const {data, items} = selectItems();
   const {query, cat, day, seg, mastered} = state;
 
-  const trip = new Date(CONFIG.tripDate + 'T00:00:00');
-  const dd = Math.ceil((trip - new Date()) / 864e5);
-  const depLabel = trip.toLocaleDateString('fr-FR', {day:'2-digit', month:'long'}).toUpperCase();
   const todayLabel = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
 
   const doneCount = mastered.filter(id => data.some(d => d.id === id)).length;
@@ -503,21 +499,6 @@ function render(){
     <div style="background:#141414;border-radius:16px;padding:16px 18px 15px;overflow:hidden">
       <h1 class="jptitle" style="margin:0;font:900 26px 'Noto Sans JP';color:#fff;letter-spacing:.02em">日本ブリーフィング</h1>
       <p style="margin:4px 0 0;font:600 11px 'Hanken Grotesk';letter-spacing:.28em;text-transform:uppercase;color:#8f8a7e">Nihon briefing · ${esc(todayLabel)}</p>
-      <!-- panneau de depart (発車標) : LED ambre, chiffres tabulaires -->
-      <div style="margin-top:12px;background:#0b0b0b;border:1px solid #242424;border-radius:10px;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <span style="display:flex;flex-direction:column;line-height:1.25">
-          <span style="font:800 12px 'Noto Sans JP';color:#ffb400;text-shadow:0 0 7px rgba(255,180,0,.5)">出発</span>
-          <span style="font:700 8.5px 'Hanken Grotesk';letter-spacing:.2em;color:#8f8a7e">DÉPART</span>
-        </span>
-        <span class="tnum" style="font:800 15px 'Hanken Grotesk';letter-spacing:.1em;color:#ffb400;text-shadow:0 0 7px rgba(255,180,0,.5);white-space:nowrap">${esc(depLabel)}</span>
-        <span style="display:flex;flex-direction:column;align-items:center;line-height:1.25">
-          <span style="font:800 12px 'Noto Sans JP';color:#ffb400;text-shadow:0 0 7px rgba(255,180,0,.5)">日本</span>
-          <span style="font:700 8.5px 'Hanken Grotesk';letter-spacing:.2em;color:#8f8a7e">JAPON</span>
-        </span>
-        ${dd > 0
-          ? `<span style="display:flex;flex-direction:column;align-items:flex-end;line-height:1.2"><span class="tnum" style="font:800 16px 'Hanken Grotesk';letter-spacing:.05em;color:#ffb400;text-shadow:0 0 8px rgba(255,180,0,.55)">J−${dd}</span><span style="font:700 9px 'Noto Sans JP';color:#8f8a7e">あと${dd}日</span></span>`
-          : `<span style="font:800 14px 'Noto Sans JP';color:#ffb400;text-shadow:0 0 8px rgba(255,180,0,.55)">${dd === 0 ? '出発 !' : '日本にいる'}</span>`}
-      </div>
       <div aria-hidden="true" style="display:flex;height:5px;margin-top:12px;border-radius:3px;overflow:hidden">${stripe}</div>
     </div>
   </header>

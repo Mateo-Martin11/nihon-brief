@@ -29,7 +29,6 @@ et les polices.
 
 Tout est dans `index.html` :
 
-- **`CONFIG.tripDate`** — la date de départ, qui pilote le compte à rebours « J−n ».
 - **`CONFIG.showRomaji`** — affiche ou masque les transcriptions latines.
 - **`DATA`** — les fiches. Le gabarit de carte est déduit des champs présents :
   - `jp` + `fr` → carte de vocabulaire (grande, centrée, bandeau de traduction) ;
