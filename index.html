@@ -109,6 +109,9 @@
   .rv-fly-r{transition:transform .34s ease-in,opacity .34s;transform:translate(130vw,-8vh) rotate(22deg)!important;opacity:0}
   .rv-fly-l{transition:transform .34s ease-in,opacity .34s;transform:translate(-130vw,-8vh) rotate(-22deg)!important;opacity:0}
   .rv-back{transition:transform .3s cubic-bezier(.2,1.5,.4,1)}
+  .ov-quiz{background:#f2ecdd}
+  @keyframes qzPop{0%{transform:scale(2.2) rotate(-20deg);opacity:0}62%{transform:scale(.92) rotate(-3deg)}100%{transform:scale(1) rotate(-6deg);opacity:1}}
+  .qz-pop{animation:qzPop .55s cubic-bezier(.2,1.2,.4,1) both}
   /* L'entree de la carte part de la pose EXACTE du premier fantome (12px,
      .966) : la carte suivante semble monter de la pile plutot qu'apparaitre. */
   @keyframes rvIn{from{opacity:.55;transform:translateY(12px) scale(.966)}to{opacity:1;transform:none}}
@@ -424,7 +427,7 @@ const DATA = [
 /* ------------------------------------------------------------------ état */
 const STORE_KEY = 'nihon-briefing-mastered';
 const state = { query:'', cat:'all', day:0, seg:'all', mastered:loadMastered(),
-                review:null, book:null,
+                review:null, book:null, quiz:null, badges:loadBadges(),
                 iaOpen:null, iaLoading:null, iaError:null };
 
 function loadMastered(){
@@ -765,6 +768,10 @@ function render(){
     <div role="progressbar" aria-label="Progression des tampons" aria-valuenow="${doneCount}" aria-valuemin="0" aria-valuemax="${data.length}" style="flex:1;height:5px;border-radius:3px;background:#2b2b2b;overflow:hidden">
       <div style="height:100%;width:${pct};background:#E60012;border-radius:3px;transition:width .35s ease"></div>
     </div>
+    <button type="button" id="btn-quiz" class="hit" aria-label="Ouvrir le quiz — ${state.badges.length} sceau(x) sur ${CATS.length + 1}" style="flex:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;background:#1f1f1f;border-radius:10px;padding:6px 12px">
+      <span style="font:900 13px 'Noto Sans JP';color:#ffb400">検定</span>
+      <span style="font:800 9px 'Hanken Grotesk';letter-spacing:.14em;color:#8f8a7e">QUIZ</span>
+    </button>
     <button type="button" id="btn-review" class="hit" aria-label="Lancer le mode révision" style="flex:none;cursor:pointer;display:flex;align-items:center;gap:8px;background:#E60012;color:#fff;border-radius:10px;padding:9px 14px">
       <span style="font:900 14px 'Noto Sans JP'">復習</span>
       <span style="font:800 12px 'Hanken Grotesk';letter-spacing:.08em">RÉVISER</span>
@@ -807,6 +814,7 @@ function wire(){
     }
     if (e.target.closest('#btn-review')) return openReview();
     if (e.target.closest('#btn-book'))   return openBook();
+    if (e.target.closest('#btn-quiz'))   return openQuiz();
     const ia = e.target.closest('[data-ia]');
     if (ia) return iaToggle(Number(ia.dataset.ia));
     const stamp = e.target.closest('[data-stamp]');
@@ -875,7 +883,7 @@ function openReview(){
     const j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
   }
-  state.book = null;
+  state.book = null; state.quiz = null;
   state.review = {deck, i:0, revealed:false, stamped:0};
   renderOverlays();
 }
@@ -1091,7 +1099,7 @@ function bookPages(){
 }
 
 function openBook(){
-  state.review = null;
+  state.review = null; state.quiz = null;
   state.book = {page:0, opened:false};
   renderOverlays();
   // double rAF : la couverture doit etre peinte fermee avant de s'ouvrir
@@ -1240,11 +1248,275 @@ function tplBook(){
 /* =========================================================================
    RENDU ET CABLAGE DES OVERLAYS
    ========================================================================= */
+/* =========================================================================
+   QUIZ — QCM générés automatiquement depuis les fiches, un sceau par
+   catégorie. 80 % de bonnes réponses décrochent le sceau. Les mauvaises
+   réponses sont piochées dans les autres fiches : aucun contenu à écrire.
+   ========================================================================= */
+const QZ_PAPER = [242, 236, 221];   // fond #f2ecdd du quiz, pour ink()
+
+/* Clé en littéral : loadBadges est hissée et tourne avant les const de ce
+   bloc (init de state) — une const partagée serait encore en zone morte. */
+function loadBadges(){
+  try { const b = JSON.parse(localStorage.getItem('nihon-briefing-badges') || '[]'); return Array.isArray(b) ? b : []; }
+  catch(e){ return []; }
+}
+function saveBadges(){
+  try { localStorage.setItem('nihon-briefing-badges', JSON.stringify(state.badges)); } catch(e){}
+}
+
+function qzShuffle(a){
+  a = a.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* Première proposition du body — sert de définition dans les QCM. */
+function qzClause(d){
+  const s = d.body || '';
+  let cut = s.length;
+  for (const t of ['. ', ' — ', ' : ']) {
+    const k = s.indexOf(t);
+    if (k > 14 && k < cut) cut = k;
+  }
+  let out = s.slice(0, Math.min(cut, 110)).trim();
+  if (out.length < s.length) out += '…';
+  return out;
+}
+
+const qzTerm = d => d.romaji ? `${d.jp} · ${d.romaji}` : d.jp;
+
+function qzMake(prompt, correct, wrongs){
+  const opts = qzShuffle([correct, ...wrongs.filter(w => w && w !== correct).slice(0, 3)]);
+  if (opts.length < 3) return null;
+  return {prompt, opts, ok: opts.indexOf(correct)};
+}
+
+/* Distracteurs : la catégorie d'abord, tout le jeu de données en secours. */
+function qzOthers(pool, d, val){
+  const local = pool.filter(x => x !== d && val(x));
+  const src = local.length >= 3 ? local : DATA.filter(x => x !== d && val(x));
+  const seen = new Set([val(d)]);
+  const out = [];
+  for (const x of qzShuffle(src)) {
+    const v = val(x);
+    if (!seen.has(v)) { seen.add(v); out.push(v); }
+  }
+  return out;
+}
+
+function qzVocab(d, pool){
+  if (Math.random() < 0.5) {
+    return qzMake(`Que veut dire « ${d.jp} » (${d.romaji}) ?`, d.fr,
+                  qzOthers(pool, d, x => x.fr || null));
+  }
+  return qzMake(`Comment dit-on : « ${d.fr} » ?`, qzTerm(d),
+                qzOthers(pool, d, x => x.fr ? qzTerm(x) : null));
+}
+
+function qzDef(d, pool){
+  const isHyb = x => (x.jp && x.body && !x.fr) ? x : null;
+  if (Math.random() < 0.5) {
+    return qzMake(`« ${qzTerm(d)} », c'est…`, qzClause(d),
+                  qzOthers(pool, d, x => isHyb(x) ? qzClause(x) : null));
+  }
+  return qzMake(`Quel terme correspond à : « ${qzClause(d)} » ?`, qzTerm(d),
+                qzOthers(pool, d, x => isHyb(x) ? qzTerm(x) : null));
+}
+
+/* Un nombre du body est masqué ; les leurres gardent le même ordre de
+   grandeur (une année est décalée, une quantité est multipliée). */
+function qzNum(d){
+  const body = d.body || '';
+  const m = body.match(/\d{1,3}(?:\s\d{3})+|\d+,\d+|\d{2,4}/);
+  if (!m) return null;
+  const tok = m[0];
+  let sent = body.split('. ').find(p => p.includes(tok)) || body;
+  if (sent.length > 160) {
+    const k = sent.indexOf(tok), a = Math.max(0, k - 70);
+    sent = (a > 0 ? '…' : '') + sent.slice(a, k + tok.length + 75) + '…';
+  }
+  const masked = sent.replace(tok, '___');
+  const spaced = tok.includes(' ');
+  const fmt = x => spaced ? String(x).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : String(x);
+  let alts;
+  if (tok.includes(',')) {
+    const f = parseFloat(tok.replace(',', '.'));
+    alts = [f * 2, f * 0.6, f * 1.4].map(x => String(Math.round(x * 100) / 100).replace('.', ','));
+  } else {
+    const n = parseInt(tok.replace(/\s/g, ''), 10);
+    alts = (n >= 1300 && n <= 2099 && !spaced)
+      ? [n - 13, n + 9, n - 27].map(String)
+      : [Math.round(n / 2), n * 2, Math.round(n * 1.5)].filter(x => x > 0 && x !== n).map(fmt);
+  }
+  alts = [...new Set(alts)].filter(a => a !== tok);
+  return qzMake(`Complète : « ${masked} »`, tok, alts);
+}
+
+/* Extrait du body, mots du titre voilés pour ne pas souffler la réponse. */
+function qzFact(d, pool){
+  if (!d.title || !d.body) return null;
+  const wrongs = qzOthers(pool, d, x => (x.title && x.body) ? x.title : null);
+  let ex = d.body.slice(0, 155);
+  if (d.body.length > 155) ex += '…';
+  for (const w of d.title.split(/\s+/)) {
+    const wc = w.replace(/[«»,.:!?'’()]/g, '');
+    if (wc.length > 3) ex = ex.replace(new RegExp(wc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '▢▢');
+  }
+  return qzMake(`Quel fait est décrit ici ? « ${ex} »`, d.title, wrongs);
+}
+
+function qzFor(d, pool){
+  if (d.meta) return qzMake(`Que signifie le kanji « ${d.jp} » ?`, d.meta,
+                            qzOthers(pool, d, x => x.meta || null));
+  if (d.fr) return qzVocab(d, pool);
+  const cand = [];
+  if (d.jp && d.body) cand.push(() => qzDef(d, pool));
+  if (d.body && /\d\d/.test(d.body)) cand.push(() => qzNum(d));
+  if (d.title && d.body) cand.push(() => qzFact(d, pool));
+  while (cand.length) {
+    const q = cand.splice(Math.floor(Math.random() * cand.length), 1)[0]();
+    if (q) return q;
+  }
+  return null;
+}
+
+function buildQuiz(key){
+  const pool = key === 'all' ? DATA : DATA.filter(d => d.cat === key);
+  const qs = [];
+  for (const d of qzShuffle(pool)) {
+    if (qs.length >= 10) break;
+    const q = qzFor(d, pool);
+    if (q) qs.push(q);
+  }
+  return qs;
+}
+
+function openQuiz(){
+  state.review = null; state.book = null;
+  state.quiz = {view:'menu'};
+  renderOverlays();
+}
+function startQuiz(key){
+  state.quiz = {view:'play', key, qs: buildQuiz(key), i:0, score:0, picked:null, newBadge:false};
+  renderOverlays();
+}
+function answerQuiz(ix){
+  const q = state.quiz;
+  if (!q || q.view !== 'play' || q.picked != null) return;
+  q.picked = ix;
+  if (ix === q.qs[q.i].ok) q.score++;
+  renderOverlays();
+}
+function nextQuiz(){
+  const q = state.quiz;
+  if (q.i + 1 < q.qs.length) { q.i++; q.picked = null; return renderOverlays(); }
+  q.view = 'done';
+  const need = Math.ceil(q.qs.length * 0.8);
+  if (q.score >= need && !state.badges.includes(q.key)) {
+    state.badges.push(q.key); saveBadges(); q.newBadge = true;
+  }
+  renderOverlays();
+}
+
+const qzCat = key => key === 'all'
+  ? ['Tout', '総', '#E60012']
+  : (c => [c[0], c[1], c[2]])(CATS.find(c => c[0] === key));
+
+function tplQzMenu(){
+  const total = CATS.length + 1;
+  const seals = [['all', '総', 'Tout', '#E60012'], ...CATS.map(c => [c[0], c[1], c[0], c[2]])]
+    .map(([key, kanji, label, color], ix) => {
+      const has = state.badges.includes(key);
+      const col = has ? ink(color, QZ_PAPER, 3) : '#b7b0a0';
+      const rot = (srand(ix + 3, 11) * 10 - 5).toFixed(1);
+      return `<button type="button" data-qzseal="${esc(key)}" class="hit" aria-label="Quiz ${esc(label)}${has ? ' — sceau obtenu' : ''}" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;padding:10px 2px 8px;border-radius:12px">
+        <span aria-hidden="true" style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2.2px ${has ? 'solid' : 'dashed'} ${col};color:${col};font:900 23px 'Noto Sans JP';transform:rotate(${rot}deg)${has ? `;background:${col}14` : ''}">${kanji}</span>
+        <span style="font:700 11px 'Hanken Grotesk';color:${has ? '#141414' : '#6d675c'};max-width:88px;text-align:center;line-height:1.15">${esc(label)}</span>
+      </button>`;
+    }).join('');
+  return `<div class="ov ov-quiz" role="dialog" aria-modal="true" aria-label="Quiz">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 2px">
+      <button type="button" id="qz-close" data-autofocus class="hit" aria-label="Fermer le quiz" style="width:44px;height:44px;cursor:pointer;color:#141414;font:700 16px 'Hanken Grotesk'">✕</button>
+      <span style="font:900 16px 'Noto Sans JP';color:#141414">検定<span style="font:700 11px 'Hanken Grotesk';color:#6d675c;margin-left:8px;letter-spacing:.16em">QUIZ</span></span>
+      <span class="tnum" style="font:700 12px 'Hanken Grotesk';color:#6d675c;min-width:44px;text-align:right">${state.badges.length}/${total}</span>
+    </div>
+    <p style="margin:0;padding:0 18px 8px;font:600 12px 'Hanken Grotesk';color:#6d675c;text-align:center">10 questions tirées des fiches — 80 % de bonnes réponses décrochent le sceau.</p>
+    <div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:2px;align-content:start;padding:2px 12px 34px;max-width:860px;width:100%;margin:0 auto;box-sizing:border-box">${seals}</div>
+  </div>`;
+}
+
+function tplQzPlay(){
+  const q = state.quiz, cur = q.qs[q.i];
+  const [label, kanji, color] = qzCat(q.key);
+  const band = ink(color);
+  const answered = q.picked != null;
+  const opts = cur.opts.map((o, ix) => {
+    let bg = '#fff', bd = '#c9c0aa', col = '#141414', mark = '';
+    if (answered) {
+      if (ix === cur.ok)        { bg = '#0B7A41'; bd = '#0B7A41'; col = '#fff'; mark = '✓ '; }
+      else if (ix === q.picked) { bg = '#B3261E'; bd = '#B3261E'; col = '#fff'; mark = '✗ '; }
+      else                      { col = '#6d675c'; }
+    }
+    return `<button type="button" data-qzopt="${ix}" ${answered ? 'disabled' : (ix === 0 ? 'data-autofocus' : '')} style="cursor:${answered ? 'default' : 'pointer'};text-align:left;min-height:50px;border-radius:11px;border:1.6px solid ${bd};background:${bg};color:${col};font:600 14px/1.45 'Hanken Grotesk';padding:12px 14px">${mark}${esc(o)}</button>`;
+  }).join('');
+  return `<div class="ov ov-quiz" role="dialog" aria-modal="true" aria-label="Quiz ${esc(label)}">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 4px">
+      <button type="button" id="qz-close" class="hit" aria-label="Abandonner le quiz" style="width:44px;height:44px;cursor:pointer;color:#141414;font:700 16px 'Hanken Grotesk'">✕</button>
+      <span style="display:flex;align-items:center;gap:8px;background:${band};color:#fff;border-radius:8px;padding:5px 13px;font:800 13px 'Hanken Grotesk'"><span style="font:900 14px 'Noto Sans JP'">${kanji}</span>${esc(label)}</span>
+      <span class="tnum" style="font:700 12px 'Hanken Grotesk';color:#6d675c;min-width:44px;text-align:right">${q.i + 1} / ${q.qs.length}</span>
+    </div>
+    <div style="margin:0 18px;height:3px;border-radius:2px;background:#ddd5c2;overflow:hidden"><div style="height:100%;width:${Math.round(q.i / q.qs.length * 100)}%;background:${band};transition:width .3s"></div></div>
+    <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:18px 18px 30px;max-width:560px;width:100%;margin:0 auto;box-sizing:border-box">
+      <p style="margin:0 0 6px;font:700 15px/1.5 'Hanken Grotesk';color:#141414">${esc(cur.prompt)}</p>
+      ${opts}
+      <div style="min-height:58px;display:flex;align-items:center;justify-content:flex-end;padding-top:4px">
+        ${answered ? `<button type="button" id="qz-next" data-autofocus style="cursor:pointer;background:#141414;color:#fff;border-radius:10px;padding:12px 22px;font:800 13px 'Hanken Grotesk';letter-spacing:.06em">${q.i + 1 < q.qs.length ? 'SUIVANT' : 'RÉSULTAT'}</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function tplQzResult(){
+  const q = state.quiz, n = q.qs.length, need = Math.ceil(n * 0.8);
+  const [label, kanji, color] = qzCat(q.key);
+  const win = q.score >= need;
+  const col = win ? ink(color, QZ_PAPER, 3) : '#b7b0a0';
+  const msg = win ? (q.newBadge ? `Sceau ${esc(label)} décroché !` : 'Sceau déjà en poche.')
+                  : `Il fallait ${need} bonnes réponses pour le sceau.`;
+  return `<div class="ov ov-quiz" role="dialog" aria-modal="true" aria-label="Résultat du quiz">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 4px">
+      <button type="button" id="qz-close" class="hit" aria-label="Fermer le quiz" style="width:44px;height:44px;cursor:pointer;color:#141414;font:700 16px 'Hanken Grotesk'">✕</button>
+      <span style="font:900 16px 'Noto Sans JP';color:#141414">結果<span style="font:700 11px 'Hanken Grotesk';color:#6d675c;margin-left:8px;letter-spacing:.16em">RÉSULTAT</span></span>
+      <span style="min-width:44px"></span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center">
+      <span aria-hidden="true" class="${q.newBadge ? 'qz-pop' : ''}" style="width:100px;height:100px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:3px ${win ? 'solid' : 'dashed'} ${col};color:${col};font:900 46px 'Noto Sans JP';transform:rotate(-6deg)${win ? `;background:${col}14` : ''}">${kanji}</span>
+      <div class="tnum" style="font:900 34px 'Hanken Grotesk';color:#141414">${q.score}<span style="font-size:18px;color:#6d675c"> / ${n}</span></div>
+      <div style="font:700 14px 'Hanken Grotesk';color:${win ? ink('#0B7A41', QZ_PAPER) : '#6d675c'}">${msg}</div>
+      <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;justify-content:center">
+        <button type="button" id="qz-replay" data-autofocus style="cursor:pointer;background:#E60012;color:#fff;border-radius:10px;padding:12px 18px;font:800 13px 'Hanken Grotesk';letter-spacing:.05em">REJOUER</button>
+        <button type="button" id="qz-menu2" style="cursor:pointer;background:#2b2b2b;color:#fff;border-radius:10px;padding:12px 18px;font:800 13px 'Hanken Grotesk';letter-spacing:.05em">TOUS LES SCEAUX</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function tplQuiz(){
+  if (state.quiz.view === 'menu') return tplQzMenu();
+  if (state.quiz.view === 'play') return tplQzPlay();
+  return tplQzResult();
+}
+
 function renderOverlays(){
   const root = document.getElementById('overlays');
   const prevFocus = document.activeElement?.id;
   if (state.review)    root.innerHTML = tplReview();
   else if (state.book) root.innerHTML = tplBook();
+  else if (state.quiz) root.innerHTML = tplQuiz();
   else { root.innerHTML = ''; return; }
   const back = prevFocus && root.querySelector('#' + prevFocus);
   if (back && !back.disabled) back.focus({preventScroll:true});
@@ -1252,8 +1524,8 @@ function renderOverlays(){
 }
 
 function closeOverlays(){
-  const opener = state.review ? 'btn-review' : 'btn-book';
-  state.review = null; state.book = null;
+  const opener = state.review ? 'btn-review' : state.book ? 'btn-book' : 'btn-quiz';
+  state.review = null; state.book = null; state.quiz = null;
   renderOverlays();
   document.getElementById(opener)?.focus();
 }
@@ -1275,6 +1547,14 @@ function wireOverlays(){
     if (dragMoved) { dragMoved = false; return; }   // clic fantome apres un swipe
     if (e.target.closest('#rv-close,#rv-close2,#rv-close3,#bk-close')) return closeOverlays();
     if (e.target.closest('#rv-restart'))  return openReview();
+    if (e.target.closest('#qz-close'))   return closeOverlays();
+    const seal = e.target.closest('[data-qzseal]');
+    if (seal) return startQuiz(seal.dataset.qzseal);
+    const opt = e.target.closest('[data-qzopt]');
+    if (opt && !opt.disabled) return answerQuiz(Number(opt.dataset.qzopt));
+    if (e.target.closest('#qz-next'))    return nextQuiz();
+    if (e.target.closest('#qz-replay'))  return startQuiz(state.quiz.key);
+    if (e.target.closest('#qz-menu2'))   { state.quiz = {view:'menu'}; return renderOverlays(); }
     if (e.target.closest('#rv-reveal') && !e.target.closest('#rv-reveal').disabled) { state.review.revealed = true; return renderOverlays(); }
     if (e.target.closest('#rv-know'))     return flyAndAct('know');
     if (e.target.closest('#rv-again-btn')) return flyAndAct('again');
@@ -1353,6 +1633,9 @@ function wireOverlays(){
     } else if (state.book) {
       if (e.key === 'ArrowRight') { e.preventDefault(); bookTurn(1); }
       if (e.key === 'ArrowLeft')  { e.preventDefault(); bookTurn(-1); }
+    } else if (state.quiz && state.quiz.view === 'play' && state.quiz.picked == null && /^[1-9]$/.test(e.key)) {
+      const ix = Number(e.key) - 1;
+      if (state.quiz.qs[state.quiz.i].opts[ix] != null) { e.preventDefault(); answerQuiz(ix); }
     }
   });
 }
