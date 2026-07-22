@@ -19,11 +19,12 @@ et les polices.
 ## Structure
 
 | Fichier | Rôle |
-|---|---|
+| --- | --- |
 | `index.html` | Toute l'app — données, rendu, styles. Aucune dépendance. |
 | `sw.js` | Service worker : cache de la coquille, capture des polices au vol. |
 | `manifest.webmanifest` | Métadonnées d'installation (nom, icônes, plein écran). |
 | `icons/` | Icônes 192/512, variante maskable, apple-touch-icon. |
+| `worker/` | Proxy Cloudflare pour le bouton IA — la clé Anthropic vit là, jamais ici. |
 
 ## Modifier le contenu
 
@@ -49,6 +50,19 @@ npx http-server . -p 8777 -c-1
 
 Après modification, penser à incrémenter `VERSION` dans `sw.js` pour que les
 appareils déjà installés récupèrent la nouvelle version.
+
+## Bouton IA (optionnel)
+
+Chaque fiche peut afficher un bouton « IA » qui demande à Claude de développer
+le sujet. L'app n'embarque **aucune clé API** (dépôt public) : elle appelle un
+proxy Cloudflare Worker qui détient la clé en secret. Voir [worker/](worker/).
+
+- Sans proxy configuré, les boutons n'apparaissent pas — l'app reste inchangée.
+- Les réponses sont mises en cache local : une fiche déjà demandée ne coûte
+  plus rien et reste lisible hors ligne.
+- Hors ligne, seuls les boutons des fiches déjà en cache restent visibles.
+
+Déploiement du proxy : voir `worker/README.md`.
 
 ## Note sur la progression
 

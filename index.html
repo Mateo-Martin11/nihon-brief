@@ -169,6 +169,17 @@ const CONFIG = {
   showRomaji: true
 };
 
+/* --- bouton IA -----------------------------------------------------------
+   L'app appelle un proxy Cloudflare qui detient la cle Anthropic ; aucune
+   cle ici (le depot est public). Tant que l'URL est vide, aucun bouton IA
+   n'apparait. Les reponses sont mises en cache localement : une fiche deja
+   demandee ne coute plus rien et reste lisible hors ligne. */
+const IA_URL = (() => {
+  try { return localStorage.getItem('nihon-ia-url') || ''; } catch (e) { return ''; }
+})();
+let iaCache = {};
+try { iaCache = JSON.parse(localStorage.getItem('nihon-ia-cache') || '{}') || {}; } catch (e) {}
+
 /* ----------------------------------------------------------- catégories */
 const CATS = [
   ['Anecdote','話','#E60012'],['Actu','新','#F15A22'],['Plat','食','#E8A200'],['Vocabulaire','語','#009BBF'],
@@ -234,7 +245,8 @@ const DATA = [
 /* ------------------------------------------------------------------ état */
 const STORE_KEY = 'nihon-briefing-mastered';
 const state = { query:'', cat:'all', day:0, seg:'all', mastered:loadMastered(),
-                review:null, book:null };
+                review:null, book:null,
+                iaOpen:null, iaLoading:null, iaError:null };
 
 function loadMastered(){
   try { const m = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); return Array.isArray(m) ? m : []; }
@@ -424,11 +436,45 @@ function tplPlain(it){
     </div>`;
 }
 
+/* Rendu leger du markdown autorise par le proxy : gras et listes seulement.
+   Le texte est ECHAPPE d'abord — jamais de HTML brut venant du reseau. */
+function mdLite(text){
+  const safe = esc(text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  let html = '', inList = false;
+  for (const l of safe.split('\n')) {
+    if (/^\s*-\s+/.test(l)) {
+      if (!inList) { html += '<ul style="margin:6px 0;padding-left:18px">'; inList = true; }
+      html += `<li style="margin:2px 0">${l.replace(/^\s*-\s+/, '')}</li>`;
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      if (l.trim()) html += `<p style="margin:6px 0">${l}</p>`;
+    }
+  }
+  return html + (inList ? '</ul>' : '');
+}
+
+function tplIA(it){
+  // hors ligne : le bouton n'apparait que si une reponse est deja en cache
+  const cached = iaCache[it.id];
+  if (!IA_URL || (!navigator.onLine && !cached)) return '';
+  const quoi = esc(it.jp || it.title);
+  const open = state.iaOpen === it.id;
+  const loading = state.iaLoading === it.id;
+  const panel = !open ? '' : `<div role="region" aria-label="Complément IA" style="border-top:1px solid #eceae3;background:#fbfaf7;padding:11px 16px 13px;font:400 13px/1.6 'Hanken Grotesk';color:#3f3c35;text-align:left"${loading ? ' aria-busy="true"' : ''}>${
+    loading ? `<span style="font:600 11px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:#76736a">Claude réfléchit…</span>`
+    : cached ? mdLite(cached)
+    : `<span style="color:#957100">${esc(state.iaError || 'Erreur — réessaie.')}</span>`
+  }</div>`;
+  return `<div style="display:flex;justify-content:flex-end;padding:5px 10px 8px">
+      <button type="button" class="hit" data-ia="${it.id}" aria-expanded="${open}" aria-label="En savoir plus sur « ${quoi} » avec l'IA" style="cursor:pointer;font:800 10px 'Hanken Grotesk';letter-spacing:.18em;color:${open ? '#fff' : '#76736a'};background:${open ? '#141414' : 'transparent'};border:1px solid ${open ? '#141414' : '#d9d4c8'};border-radius:999px;padding:4px 12px;transition:background .15s,color .15s">IA</button>
+    </div>${panel}`;
+}
+
 function tplCard(it){
   const inner = it.isVocab ? tplVocab(it) : it.isHybrid ? tplHybrid(it) : tplPlain(it);
   return `<div class="card" style="position:relative;background:#fff;border:1.5px solid ${it.borderColor};border-radius:16px;overflow:hidden;animation:fadeUp .25s ease both">
     ${tplStamp(it)}
-    <div class="body" style="opacity:${it.fade};transition:opacity .2s">${inner}</div>
+    <div class="body" style="opacity:${it.fade};transition:opacity .2s">${inner}${tplIA(it)}</div>
   </div>`;
 }
 
@@ -439,7 +485,7 @@ function tplCard(it){
 function focusKey(){
   const el = document.activeElement;
   if (!el || el === document.body) return null;
-  for (const a of ['data-cat','data-seg','data-day','data-stamp']) {
+  for (const a of ['data-cat','data-seg','data-day','data-stamp','data-ia']) {
     if (el.hasAttribute?.(a)) return `[${a}="${el.getAttribute(a)}"]`;
   }
   return el.id ? '#' + el.id : null;
@@ -575,9 +621,46 @@ function wire(){
     }
     if (e.target.closest('#btn-review')) return openReview();
     if (e.target.closest('#btn-book'))   return openBook();
+    const ia = e.target.closest('[data-ia]');
+    if (ia) return iaToggle(Number(ia.dataset.ia));
     const stamp = e.target.closest('[data-stamp]');
     if (stamp) { toggle(Number(stamp.dataset.stamp)); }
   });
+
+  // le bouton IA depend du reseau : re-rendu quand la connexion change
+  window.addEventListener('online', render);
+  window.addEventListener('offline', render);
+}
+
+/* -------------------------------------------------------------- bouton IA */
+async function iaToggle(id){
+  if (state.iaOpen === id) { state.iaOpen = null; return render(); }
+  state.iaOpen = id;
+  if (iaCache[id]) return render();
+  state.iaLoading = id;
+  state.iaError = null;
+  render();
+  try {
+    const d = DATA.find(x => x.id === id);
+    const payload = {};
+    for (const f of ['cat','title','jp','kana','romaji','fr','meta','body']) {
+      if (d && d[f]) payload[f] = d[f];
+    }
+    const r = await fetch(IA_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const out = await r.json();
+    if (!r.ok || !out.text) throw new Error(out.error || 'Réponse vide.');
+    iaCache[id] = out.text;
+    try { localStorage.setItem('nihon-ia-cache', JSON.stringify(iaCache)); } catch (e) {}
+  } catch (err) {
+    state.iaError = err.message === 'Failed to fetch' ? 'Réseau indisponible.' : String(err.message || 'Erreur.');
+  } finally {
+    if (state.iaLoading === id) state.iaLoading = null;
+    render();
+  }
 }
 
 /* =========================================================================
