@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>日本ブリーフィング — Nihon Briefing</title>
-<meta name="theme-color" content="#141414">
+<meta name="theme-color" content="#faf9f6">
 <meta name="description" content="Fiches de préparation au Japon : vocabulaire, plats, anecdotes, étiquette.">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Nihon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -464,7 +464,6 @@ function render(){
   const {data, items} = selectItems();
   const {query, cat, day, seg, mastered} = state;
 
-  const todayLabel = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
 
   const doneCount = mastered.filter(id => data.some(d => d.id === id)).length;
   const pct = Math.round(doneCount / data.length * 100) + '%';
@@ -503,25 +502,17 @@ function render(){
        </div>`;
 
   document.getElementById('shell').innerHTML = `
-  <header class="gx" style="padding-top:18px;padding-bottom:14px">
-    <div style="background:#141414;border-radius:16px;padding:16px 18px 15px;overflow:hidden">
-      <div style="display:flex;align-items:center;gap:11px">
-        <span aria-hidden="true" style="flex:none;width:34px;height:34px;border-radius:9px;background:#E60012;color:#fff;font:900 20px 'Noto Sans JP';display:grid;place-items:center">日</span>
-        <div style="min-width:0">
-          <h1 class="jptitle" style="margin:0;font:900 25px/1.15 'Noto Sans JP';color:#fff;letter-spacing:.02em">日本ブリーフィング</h1>
-          <p style="margin:3px 0 0;font:600 10.5px 'Hanken Grotesk';letter-spacing:.26em;text-transform:uppercase;color:#8f8a7e">Nihon briefing · ${esc(todayLabel)}</p>
-        </div>
-      </div>
-      <div aria-hidden="true" style="height:5px;margin-top:13px;border-radius:3px;background:#E60012"></div>
-    </div>
-  </header>
+  <h1 class="jptitle sr-only">日本ブリーフィング — Nihon Briefing</h1>
 
-  <nav aria-label="Recherche et filtres" style="position:sticky;top:0;z-index:20;background:rgba(250,249,246,.93);backdrop-filter:blur(12px);border-bottom:1px solid #eceae3;padding:10px 0 11px;display:flex;flex-direction:column;gap:9px">
-    <div class="gx">
+  <nav aria-label="Recherche et filtres" style="position:sticky;top:0;z-index:20;background:rgba(250,249,246,.93);backdrop-filter:blur(12px);border-bottom:1px solid #eceae3;padding:calc(12px + env(safe-area-inset-top,0px)) 0 11px;display:flex;flex-direction:column;gap:9px">
+    <div class="gx" style="display:flex;align-items:center;gap:10px">
+      <!-- le sceau est l'identite ET le bouton accueil : il reinitialise
+           tout et remonte en haut. Un header n'existe que s'il sert. -->
+      <button type="button" id="btn-home" class="hit" aria-label="Réinitialiser les filtres et revenir en haut" style="flex:none;width:43px;height:43px;border-radius:12px;background:#E60012;color:#fff;font:900 22px 'Noto Sans JP';display:grid;place-items:center;cursor:pointer">日</button>
       <label for="q" class="sr-only">Chercher une fiche</label>
-      <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #1a1a1a;border-radius:12px;padding:0 14px;max-width:640px">
+      <div style="flex:1;display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #1a1a1a;border-radius:12px;padding:0 14px;max-width:640px">
         <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
-        <input id="q" type="search" enterkeyhint="search" autocomplete="off" value="${esc(query)}" placeholder="Chercher — « l'addition », 駅, motsunabe…" style="flex:1;border:none;outline:none;background:transparent;font-weight:500;font-family:'Hanken Grotesk';color:#1a1a1a;padding:12px 0">
+        <input id="q" type="search" enterkeyhint="search" autocomplete="off" value="${esc(query)}" placeholder="Chercher — « l'addition », 駅, motsunabe…" style="flex:1;border:none;outline:none;background:transparent;font-weight:500;font-family:'Hanken Grotesk';color:#1a1a1a;padding:12px 0;min-width:0">
         ${query ? `<button type="button" id="clear" class="hit" aria-label="Effacer la recherche" style="cursor:pointer;font:700 12px 'Hanken Grotesk';color:#76736a;padding:4px">✕</button>` : ''}
       </div>
     </div>
@@ -576,6 +567,12 @@ function wire(){
     if (seg) { state.seg = seg.dataset.seg; return render(); }
     const day = e.target.closest('[data-day]');
     if (day) { state.day = Number(day.dataset.day); return render(); }
+    if (e.target.closest('#btn-home')) {
+      Object.assign(state, {query:'', cat:'all', day:0, seg:'all'});
+      render();
+      window.scrollTo({top:0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+      return;
+    }
     if (e.target.closest('#btn-review')) return openReview();
     if (e.target.closest('#btn-book'))   return openBook();
     const stamp = e.target.closest('[data-stamp]');
