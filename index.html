@@ -321,13 +321,20 @@ function selectItems(){
   const data = DATA.map(d => ({...d, day: d.day || 1}));
   const list = getFiltered();
 
+  /* Le feed est sectionne par CATEGORIE, dans l'ordre du sommaire (CATS) :
+     tete de section = sceau kanji + nom + compte + filet. Sans reperes, la
+     vue « Tout » n'etait qu'une pile indistincte de 49 cartes. */
   const items = [];
-  let lastDay = null;
-  list.forEach(d => {
-    if (d.day !== lastDay) {
-      lastDay = d.day;
-      const n = list.filter(x => x.day === d.day).length;
-      items.push({id:'h'+d.day, isHeader:true, isCard:false, label:'JOUR '+d.day, sub:n+' fiches'});
+  const ordered = [];
+  for (const [name] of CATS) ordered.push(...list.filter(d => d.cat === name));
+  let lastCat = null;
+  ordered.forEach(d => {
+    if (d.cat !== lastCat) {
+      lastCat = d.cat;
+      const n = ordered.filter(x => x.cat === d.cat).length;
+      const hc = CAT_MAP[d.cat] || {kanji:'?', ink:'#5c5c5c'};
+      items.push({id:'h'+d.cat, isHeader:true, isCard:false, label:d.cat,
+                  kanji:hc.kanji, color:hc.ink, sub:n + (n > 1 ? ' fiches' : ' fiche')});
     }
     const cm = CAT_MAP[d.cat] || {kanji:'?', color:'#888', ink:'#5c5c5c'};
     const done = mastered.includes(d.id);
@@ -351,9 +358,10 @@ function selectItems(){
 
 /* ------------------------------------------------------------ templates */
 function tplHeader(it){
-  return `<div style="display:flex;align-items:center;gap:10px;padding:6px 2px 0">
-    <span style="background:#141414;color:#fff;border-radius:7px;padding:3px 9px;font:800 11px 'Hanken Grotesk';letter-spacing:.16em">${esc(it.label)}</span>
-    <span style="font:600 11px 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:#76736a">${esc(it.sub)}</span>
+  return `<div style="display:flex;align-items:center;gap:9px;padding:10px 2px 0">
+    <span aria-hidden="true" style="flex:none;width:24px;height:24px;border-radius:7px;background:${it.color};color:#fff;font:900 13px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</span>
+    <span style="font:800 12px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:#1a1a1a">${esc(it.label)}</span>
+    <span style="font:600 11px 'Hanken Grotesk';letter-spacing:.08em;color:#76736a">${esc(it.sub)}</span>
     <span style="flex:1;height:1px;background:#e2dfd6"></span>
   </div>`;
 }
@@ -476,8 +484,11 @@ function render(){
     `<button type="button" class="hit" data-seg="${k}" aria-pressed="${seg===k}" style="cursor:pointer;border-radius:999px;padding:5px 12px;font:700 12px 'Hanken Grotesk';background:${seg===k?'#141414':'transparent'};color:${seg===k?'#fff':'#706B62'};box-shadow:${seg===k?'0 1px 3px rgba(0,0,0,.25)':'none'};transition:background .15s">${esc(l)}</button>`
   ).join('');
 
+  // puces de jour : uniquement si les fiches couvrent plusieurs jours —
+  // « Tous les jours / Jour 1 » seul n'est que du bruit
   const dayNums = [...new Set(data.map(d => d.day || 1))].sort((a,b) => a-b);
-  const dayChips = [{v:0,label:'Tous les jours'}, ...dayNums.map(n => ({v:n,label:'Jour '+n}))].map(d => {
+  const dayChips = dayNums.length < 2 ? '' :
+    [{v:0,label:'Tous les jours'}, ...dayNums.map(n => ({v:n,label:'Jour '+n}))].map(d => {
     const active = day === d.v;
     return `<button type="button" class="hit" data-day="${d.v}" aria-pressed="${active}" style="flex:none;cursor:pointer;border-radius:999px;padding:6px 13px;font:700 12px 'Hanken Grotesk';background:${active?'#fff':'transparent'};color:${active?'#141414':'#777268'};border:1.5px solid ${active?'#141414':'#dedbd1'}">${esc(d.label)}</button>`;
   }).join('');
