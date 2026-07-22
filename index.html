@@ -6,7 +6,6 @@
 <title>日本ブリーフィング — Nihon Briefing</title>
 <meta name="theme-color" content="#141414">
 <meta name="description" content="Fiches de préparation au Japon : vocabulaire, plats, anecdotes, étiquette.">
-<link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -396,30 +395,32 @@ function tplVocab(it){
     ${it.hasBody ? `<div style="padding:10px 16px;font:400 12.5px/1.55 'Hanken Grotesk';color:#6b675e;background:#fbfaf7">${esc(it.body)}</div>` : ''}`;
 }
 
+/* Fiche AVEC japonais mais sans traduction (plat, boisson, kanji) : meme
+   panneau de nom de gare que le vocabulaire — japonais centre, romaji — et
+   le bandeau colore porte la region ou le sens (NAGOYA, « bouche… »). Sans
+   texte de bandeau, une simple bande de couleur de ligne, comme en gare. */
 function tplHybrid(it){
-  return `<div style="padding:15px 44px 15px 16px;display:flex;gap:13px;flex:1">
-      <div aria-hidden="true" style="flex:none;width:33px;height:33px;border-radius:9px;background:${it.color};color:#fff;font:900 18px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px">
-          <span style="font:700 19px 'Noto Sans JP';color:#111">${esc(it.jp)}</span>
-          <span style="font:700 11.5px 'Hanken Grotesk';letter-spacing:.1em;text-transform:uppercase;color:${it.color}">${esc(it.romaji)}</span>
-        </div>
-        ${it.hasMeta ? `<div style="font:600 11px 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#76736a;margin-bottom:4px">${esc(it.meta)}</div>` : ''}
-        <div style="font:400 13px/1.55 'Hanken Grotesk';color:#5a564d">${esc(it.body)}</div>
-      </div>
-    </div>`;
+  return `<div style="padding:19px 52px 15px;text-align:center;position:relative;flex:1;display:flex;flex-direction:column;justify-content:center">
+      <div aria-hidden="true" style="position:absolute;top:13px;left:13px;width:29px;height:29px;border-radius:9px;background:${it.color};color:#fff;font:900 16px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
+      <div style="font:700 27px 'Noto Sans JP';color:#111;line-height:1.2;letter-spacing:.01em">${esc(it.jp)}</div>
+      ${it.showRomaji ? `<div style="font:700 13px 'Hanken Grotesk';letter-spacing:.15em;text-transform:uppercase;color:${it.color};margin-top:7px">${esc(it.romaji)}</div>` : ''}
+    </div>
+    ${it.hasMeta
+      ? `<div style="background:${it.color};padding:8px 15px;text-align:center;font:600 12.5px 'Hanken Grotesk';letter-spacing:.08em;text-transform:uppercase;color:#fff">${esc(it.meta)}</div>`
+      : `<div aria-hidden="true" style="height:6px;background:${it.color}"></div>`}
+    ${it.hasBody ? `<div style="padding:10px 16px;font:400 12.5px/1.55 'Hanken Grotesk';color:#6b675e;background:#fbfaf7">${esc(it.body)}</div>` : ''}`;
 }
 
+/* Fiche sans japonais : panneau d'information (案内板) — bandeau de
+   categorie colore en tete, kanji et nom en blanc, contenu dessous. */
 function tplPlain(it){
-  return `<div style="padding:15px 44px 15px 16px;display:flex;gap:13px;flex:1">
-      <div aria-hidden="true" style="flex:none;width:33px;height:33px;border-radius:9px;background:${it.color};color:#fff;font:900 18px 'Noto Sans JP';display:grid;place-items:center">${esc(it.kanji)}</div>
-      <div style="flex:1;min-width:0">
-        <div style="margin-bottom:3px">
-          <span style="font:700 10.5px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:${it.color}">${esc(it.catName)}</span>
-        </div>
-        <div style="font:700 15px/1.3 'Hanken Grotesk';color:#111;margin-bottom:5px">${esc(it.title)}</div>
-        <div style="font:400 13px/1.55 'Hanken Grotesk';color:#5a564d">${esc(it.body)}</div>
-      </div>
+  return `<div style="display:flex;align-items:center;gap:8px;background:${it.color};color:#fff;padding:7px 46px 7px 13px">
+      <span aria-hidden="true" style="font:900 12px 'Noto Sans JP'">${esc(it.kanji)}</span>
+      <span style="font:800 10.5px 'Hanken Grotesk';letter-spacing:.16em;text-transform:uppercase">${esc(it.catName)}</span>
+    </div>
+    <div style="flex:1;padding:12px 44px 14px 15px">
+      <div style="font:700 15px/1.3 'Hanken Grotesk';color:#111;margin-bottom:5px">${esc(it.title)}</div>
+      <div style="font:400 13px/1.55 'Hanken Grotesk';color:#5a564d">${esc(it.body)}</div>
     </div>`;
 }
 
@@ -1070,14 +1071,22 @@ wireOverlays();
 render();
 
 /* ------------------------------------------------------------------- PWA
-   Le service worker exige HTTPS ou localhost : en ouvrant le fichier en
-   file:// l'enregistrement echoue, c'est attendu et sans consequence. */
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => {
-      console.warn('Service worker non enregistre :', err);
+   Le service worker et le manifeste exigent http(s) : en file:// le
+   navigateur les bloque (origine "null") et polluerait la console d'erreurs
+   CORS. On ne les branche donc qu'en http(s) — en local direct, l'app
+   fonctionne, simplement sans hors-ligne ni installation. */
+if (location.protocol.startsWith('http')) {
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = 'manifest.webmanifest';
+  document.head.appendChild(link);
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => {
+        console.warn('Service worker non enregistre :', err);
+      });
     });
-  });
+  }
 }
 </script>
 </body>
