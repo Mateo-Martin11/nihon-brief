@@ -175,6 +175,9 @@ const CONFIG = {
    n'apparait. Les reponses sont mises en cache localement : une fiche deja
    demandee ne coute plus rien et reste lisible hors ligne. */
 const IA_URL = (() => {
+  // en file:// l'origine est "null" : le proxy la refuse par construction —
+  // on masque le bouton plutot que d'offrir un echec garanti
+  if (location.protocol === 'file:') return '';
   try { return localStorage.getItem('nihon-ia-url') || 'https://nihon-ia.mateo-martin1102.workers.dev/'; }
   catch (e) { return 'https://nihon-ia.mateo-martin1102.workers.dev/'; }
 })();
@@ -664,7 +667,11 @@ async function iaToggle(id){
     iaCache[id] = out.text;
     try { localStorage.setItem('nihon-ia-cache', JSON.stringify(iaCache)); } catch (e) {}
   } catch (err) {
-    state.iaError = err.message === 'Failed to fetch' ? 'Réseau indisponible.' : String(err.message || 'Erreur.');
+    state.iaError = err.message === 'Failed to fetch'
+      ? (navigator.onLine
+          ? 'Appel bloqué — un bloqueur de pub filtre peut-être workers.dev. Réessaie en le désactivant pour ce site.'
+          : 'Pas de connexion.')
+      : String(err.message || 'Erreur.');
   } finally {
     if (state.iaLoading === id) state.iaLoading = null;
     render();
