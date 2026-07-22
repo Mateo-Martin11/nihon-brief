@@ -175,7 +175,8 @@ const CONFIG = {
    n'apparait. Les reponses sont mises en cache localement : une fiche deja
    demandee ne coute plus rien et reste lisible hors ligne. */
 const IA_URL = (() => {
-  try { return localStorage.getItem('nihon-ia-url') || ''; } catch (e) { return ''; }
+  try { return localStorage.getItem('nihon-ia-url') || 'https://nihon-ia.mateo-martin1102.workers.dev/'; }
+  catch (e) { return 'https://nihon-ia.mateo-martin1102.workers.dev/'; }
 })();
 let iaCache = {};
 try { iaCache = JSON.parse(localStorage.getItem('nihon-ia-cache') || '{}') || {}; } catch (e) {}
@@ -442,6 +443,13 @@ function mdLite(text){
   const safe = esc(text).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   let html = '', inList = false;
   for (const l of safe.split('\n')) {
+    // le modele glisse parfois un titre markdown malgre la consigne :
+    // on le rend comme un intertitre sobre plutot que d'afficher les #
+    if (/^\s*#{1,4}\s+/.test(l)) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += `<p style="margin:10px 0 4px;font-weight:700;color:#111">${l.replace(/^\s*#{1,4}\s+/, '')}</p>`;
+      continue;
+    }
     if (/^\s*-\s+/.test(l)) {
       if (!inList) { html += '<ul style="margin:6px 0;padding-left:18px">'; inList = true; }
       html += `<li style="margin:2px 0">${l.replace(/^\s*-\s+/, '')}</li>`;
