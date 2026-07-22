@@ -1,4 +1,4 @@
-﻿/* Nihon Briefing â€” service worker
+/* Nihon Briefing — service worker
    Objectif : l'app doit se lancer a zero barre de reseau.
 
    Deux regimes de cache distincts :
