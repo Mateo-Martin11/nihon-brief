@@ -192,7 +192,10 @@ const CATS = [
   ['Étiquette','礼','#B58A00'],['Jeu vidéo','遊','#7A3E9D'],['Boisson','飲','#C77800'],['Lieu','所','#2E8B57'],
   ['Transport','交','#444B54'],['Kanji','字','#1A1A1A'],['Insolite','奇','#9C27B0'],
   ['Yōkai','妖','#366E7A'],['Religion','神','#D0421B'],['Manga & livres','本','#2D5DA1'],
-  ['Sorties','夜','#1F2A56'],['Saisons','季','#6B8E23']
+  ['Sorties','夜','#1F2A56'],['Saisons','季','#6B8E23'],
+  ['Mode','服','#A64D79'],['Art','芸','#00695C'],['Santé','薬','#5E35B1'],
+  ['Nature','動','#33691E'],['Maison','家','#6D4C41'],['Travail','働','#263238'],
+  ['École','学','#827717'],['Amour','恋','#E91E63'],['Argent','金','#B8860B']
 ];
 
 /* ---------------------------------------------------------------- fiches */
@@ -267,7 +270,41 @@ const DATA = [
   {id:68,cat:'Saisons',jp:'お盆',romaji:'Obon',body:'Mi-août, les esprits des ancêtres reviennent : danses bon odori, lanternes flottantes, et l’exode des Japonais vers leurs familles. Trains bondés autour du 13-16 août — réserve.'},
   {id:69,cat:'Saisons',jp:'花火',romaji:'hanabi',body:'« Fleurs de feu » : les feux d’artifice d’été sont des événements majeurs, des centaines de milliers de spectateurs, places au sol réservées dès le matin avec une bâche.'},
   {id:70,cat:'Saisons',title:'La saison des typhons arrive derrière toi',body:'Août-septembre, les typhons remontent l’archipel. Les trains s’arrêtent préventivement (keikaku unkyū) et tout le pays consulte la même appli météo — LE sujet de small talk national.'},
-  {id:71,cat:'Étiquette',title:'Onsen : nu, lavé, la serviette hors de l’eau',body:'On se lave assis AVANT d’entrer dans le bassin ; maillot interdit, et la petite serviette ne touche jamais l’eau (pose-la sur ta tête). Tatouages souvent bannis : cherche « tattoo friendly » ou un bain privatif (kashikiri).'}
+  {id:71,cat:'Étiquette',title:'Onsen : nu, lavé, la serviette hors de l’eau',body:'On se lave assis AVANT d’entrer dans le bassin ; maillot interdit, et la petite serviette ne touche jamais l’eau (pose-la sur ta tête). Tatouages souvent bannis : cherche « tattoo friendly » ou un bain privatif (kashikiri).'},
+  {id:72,cat:'Mode',title:'Pourquoi tout le monde semble si bien habillé',body:'Le soin de la présentation est une politesse envers les autres, pas de la vanité. Repassé, coordonné, jamais négligé — même par 35 °C.'},
+  {id:73,cat:'Mode',title:'Uniqlo, l’empire parti d’une boutique de province',body:'Tadashi Yanai a transformé le magasin familial de Yamaguchi en géant mondial du basique technique (Heattech, Airism) — et est devenu l’homme le plus riche du Japon.'},
+  {id:74,cat:'Mode',title:'Harajuku, laboratoire de style',body:'Takeshita-dōri pour le kawaii et l’exubérant, Cat Street pour le streetwear pointu. Les tribus vestimentaires — lolita, decora, visual kei — défilent surtout le week-end.'},
+  {id:75,cat:'Art',jp:'浮世絵',romaji:'ukiyo-e',body:'« Images du monde flottant » : les estampes d’Edo étaient un art populaire, vendues au prix d’un bol de nouilles. La Grande Vague de Hokusai en est l’icône — elle a marqué Van Gogh et Monet.'},
+  {id:76,cat:'Art',jp:'金継ぎ',romaji:'kintsugi',body:'Réparer une céramique brisée à la laque saupoudrée d’or : la cicatrice devient l’ornement. L’objet réparé vaut plus que le neuf, parce qu’il a une histoire.'},
+  {id:77,cat:'Art',title:'teamLab, l’art numérique qui se visite pieds nus',body:'Les installations immersives de teamLab Planets à Tokyo — on y marche dans l’eau — affichent complet : réserve en ligne plusieurs jours à l’avance.'},
+  {id:78,cat:'Santé',title:'Tes médicaments peuvent être illégaux au Japon',body:'Codéine et pseudoéphédrine — présentes dans des anti-rhume et antidouleurs français courants — sont interdites ou restreintes. Vérifie avant de partir ; au-delà d’un mois de traitement, il faut un certificat yakkan shōmei.'},
+  {id:79,cat:'Santé',jp:'薬局',romaji:'yakkyoku',body:'Drugstores type Matsumoto Kiyoshi : l’essentiel sans ordonnance — anti-fièvre, pansements, collyres, et le Pocari Sweat, la boisson de réhydratation reine de l’été.'},
+  {id:80,cat:'Santé',title:'110, 119, et le réflexe séisme',body:'110 police, 119 pompiers-ambulance (gratuite). Secousse : on reste à l’intérieur, tête protégée sous une table — on ne court pas dehors. L’eau du robinet est potable partout.'},
+  {id:81,cat:'Nature',title:'Les daims de Nara s’inclinent pour quémander',body:'Un millier de daims en liberté, messagers des dieux selon la tradition. Ils ont appris à saluer pour obtenir des crackers shika senbei — et à fouiller les sacs des distraits.'},
+  {id:82,cat:'Nature',title:'Les îles aux chats',body:'Aoshima, Tashirojima : d’anciens villages de pêcheurs où les chats dépassent les habitants en nombre, nourris et protégés comme porte-bonheur.'},
+  {id:83,cat:'Nature',title:'Les macaques qui se baignent en onsen',body:'À Jigokudani (Nagano), les singes des neiges trempent dans les sources chaudes — seuls primates non humains à le faire. Spectacle surtout hivernal, mais la vallée se visite l’été.'},
+  {id:84,cat:'Maison',jp:'玄関',romaji:'genkan',body:'Le sas d’entrée en contrebas : on s’y déchausse toujours, chaussures tournées vers la sortie. Maisons, ryokans, temples, certains restos — et les chaussons des toilettes ne sortent JAMAIS des toilettes.'},
+  {id:85,cat:'Maison',jp:'畳',romaji:'tatami',body:'Le tapis de paille de riz sert d’unité de surface : une chambre s’annonce en « 6 tatamis » (≈10 m²). On ne marche jamais dessus en chaussons.'},
+  {id:86,cat:'Maison',title:'Des maisons presque jetables',body:'Une maison perd l’essentiel de sa valeur en ~30 ans : normes sismiques qui évoluent, préférence culturelle du neuf. On démolit et reconstruit — d’où des rues aux styles disparates.'},
+  {id:87,cat:'Travail',jp:'居眠り',romaji:'inemuri',body:'Somnoler au bureau ou dans le métro n’a rien de honteux : « être présent en dormant » prouve qu’on s’est donné à fond. S’affaler profondément, en revanche, non.'},
+  {id:88,cat:'Travail',title:'Le nomikai, réunion déguisée en soirée',body:'Boire avec les collègues fait partie du travail : on s’y dit ce que le bureau interdit (le bureikō, parler sans grade). La jeune génération commence à s’en détacher.'},
+  {id:89,cat:'Travail',title:'Salaryman, un statut plus qu’un métier',body:'Costume sombre, dévouement à l’entreprise, dernier train de 23h. L’emploi à vie s’effrite, mais le modèle marque tout : ancienneté, cartes de visite tendues à deux mains.'},
+  {id:90,cat:'École',title:'Les élèves nettoient leur école',body:'Pas de personnel d’entretien pour les salles : balayage et serpillière quotidiens par les élèves (o-sōji). On apprend à respecter les lieux en s’en occupant soi-même.'},
+  {id:91,cat:'École',jp:'部活',romaji:'bukatsu',body:'Le club scolaire quasi incontournable — baseball, kendō, fanfare, calligraphie — jusqu’à six jours par semaine. Une seconde famille qui forge les amitiés à vie.'},
+  {id:92,cat:'École',title:'L’année commence sous les cerisiers',body:'Rentrée scolaire et embauches en avril, en pleine floraison des sakura — symbole national du départ. D’où les photos de cérémonie d’entrée au pied des arbres.'},
+  {id:93,cat:'Amour',title:'La Saint-Valentin à l’envers',body:'Le 14 février, ce sont les femmes qui offrent le chocolat — y compris le giri-choco « d’obligation » aux collègues. Les hommes rendent la pareille le 14 mars, White Day.'},
+  {id:94,cat:'Amour',jp:'ラブホテル',romaji:'rabu hoteru',body:'Les love hotels, à l’heure (« rest ») ou à la nuit (« stay ») : une institution née de l’exiguïté des logements familiaux, souvent à thème, toujours discrète.'},
+  {id:95,cat:'Amour',jp:'婚活',romaji:'konkatsu',body:'La « chasse au mariage » : speed datings, applis, agences, et même des événements organisés par les mairies — répondre à la dénatalité est devenu une politique publique.'},
+  {id:96,cat:'Argent',title:'Le pourboire n’existe pas — et peut vexer',body:'Laisser la monnaie peut te faire courser dans la rue par un serveur persuadé que tu l’as oubliée. Le service est inclus, impeccable, et ne se monnaye pas.'},
+  {id:97,cat:'Argent',title:'La carte Suica paie tout',body:'Dans le téléphone (Apple ou Google Wallet) : métro, konbini, distributeurs, casiers. Recharge en espèces aux bornes. Le sans-contact bancaire progresse, mais Suica reste le passe-partout.'},
+  {id:98,cat:'Argent',title:'Le cash, la coupelle, jamais la main',body:'Petits restos et sanctuaires vivent en liquide. Billets et pièces se posent dans la coupelle prévue — le main-à-main se fait rare. Garde des pièces de 100 ¥ pour casiers et gashapon.'},
+  {id:99,cat:'Anecdote',title:'Hachikō a attendu neuf ans',body:'Le chien akita venait chercher son maître chaque soir à la gare de Shibuya. Le professeur meurt en 1925 ; Hachikō revient tous les soirs jusqu’en 1935. Sa statue est LE point de rendez-vous de Tokyo.'},
+  {id:100,cat:'Boisson',jp:'抹茶',romaji:'matcha',body:'Le thé en poudre battu au fouet de bambou, cœur de la cérémonie du thé. Au quotidien, on boit surtout du sencha infusé et du thé glacé non sucré — les distributeurs en regorgent.'},
+  {id:101,cat:'Insolite',title:'Le melon à 200 €',body:'Melons de Yūbari, fraises calibrées : les fruits parfaits se vendent en coffrets comme des bijoux. C’est le cadeau d’entreprise ou de visite par excellence, pas une folie de riche.'},
+  {id:102,cat:'Sorties',jp:'プリクラ',romaji:'purikura',body:'Les photomatons nouvelle génération : peau lissée, yeux agrandis, décoration au stylet. Rituel de sortie entre amis — certains salons refusent les hommes non accompagnés.'},
+  {id:103,cat:'Histoire',title:'Hiroshima, ville de la paix',body:'Le 6 août 1945, 8h15 — l’anniversaire tombe pendant votre voyage. Le Dôme de Genbaku, resté debout près de l’épicentre, est aujourd’hui mémorial de la paix. Le musée est éprouvant et essentiel.'},
+  {id:104,cat:'Socio-éco',title:'Les yakuzas déclinent, à visage découvert',body:'Organisations légales mais étranglées par les lois anti-gangs : ~20 000 membres contre 184 000 en 1963. Bureaux avec plaque sur rue, et un vieillissement record des effectifs.'},
+  {id:105,cat:'Vocabulaire',jp:'おおきに',romaji:'ōkini',fr:'Merci (Kansai)',body:'À Osaka et Kyoto, le Kansai-ben remplace arigatō par ōkini. Le dialecte du Kansai, plus direct et chantant, est celui des comiques.'}
 ];
 
 /* ------------------------------------------------------------------ état */
@@ -991,17 +1028,17 @@ function tplBkSummary(){
       <span class="tnum" style="flex:none;font:${full ? "800 10px 'Noto Sans JP'" : "700 10px 'Hanken Grotesk'"};color:${full ? '#C6002B' : '#76736a'}">${full ? '完' : got + ' / ' + tot}</span>
     </div>`;
   }).join('');
-  return `<div style="text-align:center;padding-top:8px">
-    <div style="font:900 24px 'Noto Sans JP';color:#111;letter-spacing:.08em">スタンプ帳</div>
-    <div style="font:700 8.5px 'Hanken Grotesk';letter-spacing:.34em;color:#76736a;margin-top:4px">CARNET DE TAMPONS</div>
+  return `<div style="text-align:center;padding-top:3px">
+    <div style="font:900 21px 'Noto Sans JP';color:#111;letter-spacing:.08em">スタンプ帳</div>
+    <div style="font:700 8px 'Hanken Grotesk';letter-spacing:.32em;color:#76736a;margin-top:2px">CARNET DE TAMPONS</div>
   </div>
-  <div aria-hidden="true" style="margin:12px 4px 0;border-top:2.5px solid #1a1a1a"></div>
-  <div aria-hidden="true" style="margin:2px 4px 13px;border-top:1px solid #1a1a1a"></div>
-  <div style="text-align:center;margin-bottom:13px">
-    <span class="tnum" style="font:900 27px 'Hanken Grotesk';color:#C6002B">${doneIds.length}</span>
-    <span class="tnum" style="font:700 13px 'Hanken Grotesk';color:#76736a"> / ${DATA.length}</span>
+  <div aria-hidden="true" style="margin:8px 4px 0;border-top:2.5px solid #1a1a1a"></div>
+  <div aria-hidden="true" style="margin:2px 4px 8px;border-top:1px solid #1a1a1a"></div>
+  <div style="text-align:center;margin-bottom:8px">
+    <span class="tnum" style="font:900 23px 'Hanken Grotesk';color:#C6002B">${doneIds.length}</span>
+    <span class="tnum" style="font:700 12px 'Hanken Grotesk';color:#76736a"> / ${DATA.length}</span>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px 14px">${rows}</div>`;
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px">${rows}</div>`;
 }
 
 function tplBkStamps(items){
