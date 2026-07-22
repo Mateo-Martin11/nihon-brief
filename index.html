@@ -190,7 +190,9 @@ const CATS = [
   ['Histoire','史','#8F5A2B'],['Géographie','地','#00A65A'],['Technologie','技','#0079C2'],['Science','科','#00AC9B'],
   ['Socio-éco','社','#6E7B8B'],['Sport','運','#C6002B'],['Musique','音','#B6007A'],['Cinéma','映','#5B4B8A'],
   ['Étiquette','礼','#B58A00'],['Jeu vidéo','遊','#7A3E9D'],['Boisson','飲','#C77800'],['Lieu','所','#2E8B57'],
-  ['Transport','交','#444B54'],['Kanji','字','#1A1A1A'],['Insolite','奇','#9C27B0']
+  ['Transport','交','#444B54'],['Kanji','字','#1A1A1A'],['Insolite','奇','#9C27B0'],
+  ['Yōkai','妖','#366E7A'],['Religion','神','#D0421B'],['Manga & livres','本','#2D5DA1'],
+  ['Sorties','夜','#1F2A56'],['Saisons','季','#6B8E23']
 ];
 
 /* ---------------------------------------------------------------- fiches */
@@ -243,7 +245,29 @@ const DATA = [
   {id:46,cat:'Kanji',jp:'口',romaji:'kuchi · guchi',meta:'Bouche, ouverture, sortie',body:'出口 sortie, 入口 entrée, 東口 est, 西口 ouest, 北口 nord, 南口 sud.'},
   {id:47,cat:'Kanji',jp:'駅',romaji:'eki',meta:'Gare',body:'東京駅 gare de Tokyo, 駅前 le quartier devant la gare, 駅弁 le bentō du shinkansen.'},
   {id:48,cat:'Insolite',title:'Le Jinmenken, chien à visage humain',body:'Légende urbaine des années 80, une créature qui double les voitures sur les autoroutes de Tokyo.'},
-  {id:49,cat:'Insolite',title:"L'affaire de Setagaya, non résolue depuis 26 ans",body:'Décembre 2000, famille de quatre assassinée. Le tueur reste des heures, mange, dort, utilise l’ordinateur. ADN, empreintes, sang laissés sur place. Toujours rien.'}
+  {id:49,cat:'Insolite',title:"L'affaire de Setagaya, non résolue depuis 26 ans",body:'Décembre 2000, famille de quatre assassinée. Le tueur reste des heures, mange, dort, utilise l’ordinateur. ADN, empreintes, sang laissés sur place. Toujours rien.'},
+  {id:50,cat:'Yōkai',jp:'河童',romaji:'kappa',body:"L'esprit des rivières, une assiette d'eau sur le crâne et une passion pour les concombres — d'où les rouleaux kappa-maki. Les panneaux « attention à la rivière » s'en servent encore pour effrayer les enfants."},
+  {id:51,cat:'Yōkai',jp:'狸',romaji:'tanuki',body:'Le chien viverrin métamorphe et farceur du folklore. Sa statue ventrue — chapeau de paille, flasque de saké — garde l’entrée des izakayas et promet la prospérité.'},
+  {id:52,cat:'Yōkai',jp:'狐',romaji:'kitsune',body:"Le renard, messager d'Inari (récoltes et commerce). Ses statues gardent les sanctuaires Inari — dont les tunnels de torii de Fushimi à Kyoto. Son offrande favorite, le tofu frit, a donné le kitsune udon."},
+  {id:53,cat:'Yōkai',jp:'幽霊',romaji:'yūrei',body:"Le fantôme japonais : kimono blanc, longs cheveux noirs, pas de pieds — l'inspiration directe de Ring et The Grudge. Août est sa saison : les histoires d'horreur d'été donnent des frissons... rafraîchissants."},
+  {id:54,cat:'Religion',title:'Sanctuaire ou temple ? Le torii tranche',body:'Torii vermillon = sanctuaire shintō, dédié aux kami. Porte massive en bois gardée par deux statues = temple bouddhiste. Les deux coexistent sans conflit : beaucoup de Japonais pratiquent les deux sans se dire croyants.'},
+  {id:55,cat:'Religion',title:'Prier dans un sanctuaire, le rituel en cinq gestes',body:'Purifier mains et bouche au temizuya, pièce dans le tronc (5 ¥ porte bonheur — « go-en » signifie aussi « bon lien »), deux saluts, deux claquements de mains, le vœu, un dernier salut. Et on ne marche pas au centre de l’allée : c’est le passage des kami.'},
+  {id:56,cat:'Religion',jp:'おみくじ',romaji:'omikuji',body:'La loterie du destin, 100-200 ¥ : de daikichi (grande chance) à daikyō (grand malheur). Une mauvaise fortune ? On la noue sur le portant du sanctuaire pour la laisser derrière soi.'},
+  {id:57,cat:'Religion',title:'Benzaiten, la déesse venue de l’Inde',body:'La preuve que les religions voyagent : cette déesse de la musique et de l’eau est l’hindoue Sarasvatī, arrivée au Japon via le bouddhisme. Son île-sanctuaire d’Enoshima se visite en une journée depuis Tokyo.'},
+  {id:58,cat:'Manga & livres',title:'Le Shōnen Jump se lit debout au konbini',body:'L’hebdomadaire mythique où sont nés Dragon Ball, One Piece et Naruto. Le tachiyomi — lire debout en rayon sans acheter — est largement toléré : ça fait entrer les clients.'},
+  {id:59,cat:'Manga & livres',title:'Murakami tenait un bar de jazz',body:'Haruki Murakami, le romancier japonais le plus lu au monde, dirigeait le Peter Cat à Tokyo avant d’écrire. Éternel favori déçu du Nobel — les bookmakers le cotent chaque année.'},
+  {id:60,cat:'Manga & livres',jp:'漫画喫茶',romaji:'manga kissa',body:'Café ouvert 24h/24 : cabine privée, des milliers de mangas, boissons illimitées, douche. Beaucoup y dorment après le dernier train — nettement moins cher qu’un hôtel.'},
+  {id:61,cat:'Manga & livres',title:'Le premier roman du monde est japonais',body:'Le Dit du Genji, écrit vers 1008 par Murasaki Shikibu, dame de cour. Mille pages de passions aristocratiques, souvent considérées comme le premier roman de l’histoire — un millénaire avant les nôtres.'},
+  {id:62,cat:'Sorties',jp:'居酒屋',romaji:'izakaya',body:'Le bistrot japonais : petits plats à partager, bière et highball, commandes au fil de la soirée. L’otōshi — amuse-bouche facturé 300-500 ¥ — tient lieu de couvert : ce n’est pas une arnaque.'},
+  {id:63,cat:'Sorties',title:'Le karaoké se chante en box privée',body:'Pas de scène face à des inconnus : une box entre amis, facturée à l’heure, boissons commandées par téléphone. L’option nomihōdai (boissons à volonté) transforme vite la soirée.'},
+  {id:64,cat:'Sorties',title:'Golden Gai, près de 300 bars dans six ruelles',body:'À Shinjuku, des bars de cinq places serrés dans des ruelles d’après-guerre. Certains sont réservés aux habitués — repère les pancartes en anglais pour ceux qui accueillent les visiteurs.'},
+  {id:65,cat:'Sorties',jp:'終電',romaji:'shūden',body:'Le dernier train, vers minuit-1h, dicte toutes les soirées : soit on court l’attraper, soit on assume jusqu’au premier train de 5h — karaoké, manga kissa et konbini existent aussi pour ça.'},
+  {id:66,cat:'Saisons',title:'Août : chaleur de plomb et cigales assourdissantes',body:'35 °C, humidité tropicale et le chant des semi (cigales) en bande-son officielle de l’été. Distributeurs pour s’hydrater, serviettes rafraîchissantes en konbini : les locaux ne sortent pas sans.'},
+  {id:67,cat:'Saisons',jp:'祭り',romaji:'matsuri',body:'La fête traditionnelle : processions de sanctuaire, stands de yakisoba et de kakigōri (glace pilée), jeux, lanternes. L’été en regorge — si tu croises des yukata, suis la foule.'},
+  {id:68,cat:'Saisons',jp:'お盆',romaji:'Obon',body:'Mi-août, les esprits des ancêtres reviennent : danses bon odori, lanternes flottantes, et l’exode des Japonais vers leurs familles. Trains bondés autour du 13-16 août — réserve.'},
+  {id:69,cat:'Saisons',jp:'花火',romaji:'hanabi',body:'« Fleurs de feu » : les feux d’artifice d’été sont des événements majeurs, des centaines de milliers de spectateurs, places au sol réservées dès le matin avec une bâche.'},
+  {id:70,cat:'Saisons',title:'La saison des typhons arrive derrière toi',body:'Août-septembre, les typhons remontent l’archipel. Les trains s’arrêtent préventivement (keikaku unkyū) et tout le pays consulte la même appli météo — LE sujet de small talk national.'},
+  {id:71,cat:'Étiquette',title:'Onsen : nu, lavé, la serviette hors de l’eau',body:'On se lave assis AVANT d’entrer dans le bassin ; maillot interdit, et la petite serviette ne touche jamais l’eau (pose-la sur ta tête). Tatouages souvent bannis : cherche « tattoo friendly » ou un bain privatif (kashikiri).'}
 ];
 
 /* ------------------------------------------------------------------ état */
