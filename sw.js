@@ -1,4 +1,4 @@
-/* Nihon Briefing — service worker
+﻿/* Nihon Briefing â€” service worker
    Objectif : l'app doit se lancer a zero barre de reseau.
 
    Deux regimes de cache distincts :
@@ -8,7 +8,7 @@
      par URL, donc cache-first sans revalidation est sur.
 */
 
-const VERSION    = 'v18';
+const VERSION    = 'v19';
 const SHELL      = `nihon-shell-${VERSION}`;
 const FONTS      = `nihon-fonts-${VERSION}`;
 const SHELL_URLS = [
@@ -92,3 +92,4 @@ self.addEventListener('fetch', e => {
     );
   }
 });
+
