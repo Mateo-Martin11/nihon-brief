@@ -145,7 +145,7 @@
   #rv-stack{width:min(88vw,420px)}
   @media (min-width:900px){
     #rv-stack{width:min(64vw,560px)}
-    #rv-card{padding:44px 48px 40px!important}
+    #rv-card .rv-head{padding:44px 48px 30px!important}
     #rv-card .rv-jp-l{font-size:58px!important}
     #rv-card .rv-jp-s{font-size:44px!important}
     #rv-card .rv-title{font-size:27px!important}
@@ -649,25 +649,46 @@ function reviewAct(action){
   renderOverlays();
 }
 
+/* La carte de revision parle la meme signaletique que le feed : panneau de
+   nom de gare pour les fiches avec japonais (la reponse arrive en bandeau
+   colore pleine largeur + corps, comme la moitie basse de la carte du feed),
+   panneau d'information a bandeau de tete pour les autres. */
 function tplRvInner(d, revealed){
   const cm = CAT_MAP[d.cat] || {kanji:'?', ink:'#5c5c5c'};
-  const head = `<div style="display:flex;justify-content:center;margin-bottom:16px"><span style="display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="width:26px;height:26px;border-radius:8px;background:${cm.ink};color:#fff;font:900 14px 'Noto Sans JP';display:grid;place-items:center">${esc(cm.kanji)}</span><span style="font:700 11px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:${cm.ink}">${esc(d.cat)}</span></span></div>`;
-  let front;
+  const hint = revealed ? '' : `<div style="padding:0 24px 24px;text-align:center;font:600 11.5px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:#76736a">Tape pour révéler</div>`;
+
   if (d.jp) {
-    front = `${d.kana ? `<div style="font:500 15px 'Noto Sans JP';color:#777267;letter-spacing:.06em;margin-bottom:8px">${esc(d.kana)}</div>` : ''}
-      <div class="${d.jp.length > 6 ? 'rv-jp-s' : 'rv-jp-l'}" style="font:700 ${d.jp.length > 6 ? 32 : 42}px 'Noto Sans JP';color:#111;line-height:1.25">${esc(d.jp)}</div>
-      ${CONFIG.showRomaji && d.romaji ? `<div style="font:700 14px 'Hanken Grotesk';letter-spacing:.16em;text-transform:uppercase;color:${cm.ink};margin-top:10px">${esc(d.romaji)}</div>` : ''}
-      ${d.meta ? `<div style="font:600 11px 'Hanken Grotesk';letter-spacing:.12em;text-transform:uppercase;color:#76736a;margin-top:8px">${esc(d.meta)}</div>` : ''}`;
-  } else {
-    front = `<div class="rv-title" style="font:700 21px/1.35 'Hanken Grotesk';color:#111">${esc(d.title)}</div>`;
+    const band = d.fr
+      ? `<div style="display:flex;align-items:center;background:${cm.ink};padding:11px 16px;gap:10px">
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" opacity=".75" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+           <span style="flex:1;text-align:center;font:600 16px 'Hanken Grotesk';color:#fff">${esc(d.fr)}</span>
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" opacity=".75" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+         </div>`
+      : (d.meta
+          ? `<div style="background:${cm.ink};padding:9px 15px;text-align:center;font:600 13px 'Hanken Grotesk';letter-spacing:.08em;text-transform:uppercase;color:#fff">${esc(d.meta)}</div>`
+          : `<div aria-hidden="true" style="height:6px;background:${cm.ink}"></div>`);
+    const body = d.body ? `<div style="padding:13px 20px 18px;font:400 14px/1.6 'Hanken Grotesk';color:#5a564d;background:#fbfaf7;text-align:left">${esc(d.body)}</div>` : '';
+    return `<div class="rv-head" style="padding:30px 26px 22px;text-align:center">
+        <div style="display:flex;justify-content:center;margin-bottom:16px"><span style="display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="width:26px;height:26px;border-radius:8px;background:${cm.ink};color:#fff;font:900 14px 'Noto Sans JP';display:grid;place-items:center">${esc(cm.kanji)}</span><span style="font:700 11px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:${cm.ink}">${esc(d.cat)}</span></span></div>
+        ${d.kana ? `<div style="font:500 15px 'Noto Sans JP';color:#777267;letter-spacing:.06em;margin-bottom:8px">${esc(d.kana)}</div>` : ''}
+        <div class="${d.jp.length > 6 ? 'rv-jp-s' : 'rv-jp-l'}" style="font:700 ${d.jp.length > 6 ? 32 : 42}px 'Noto Sans JP';color:#111;line-height:1.25">${esc(d.jp)}</div>
+        ${CONFIG.showRomaji && d.romaji ? `<div style="font:700 14px 'Hanken Grotesk';letter-spacing:.16em;text-transform:uppercase;color:${cm.ink};margin-top:10px">${esc(d.romaji)}</div>` : ''}
+      </div>
+      ${hint}
+      ${revealed ? `<div data-answer style="animation:fadeUp .25s ease both">${band}${body}</div>` : ''}`;
   }
-  const answer = d.fr
-    ? `<div style="background:${cm.ink};border-radius:12px;padding:12px 18px;font:600 17px 'Hanken Grotesk';color:#fff">${esc(d.fr)}</div>
-       ${d.body ? `<div style="margin-top:12px;font:400 14px/1.6 'Hanken Grotesk';color:#5a564d">${esc(d.body)}</div>` : ''}`
-    : `<div style="font:400 15px/1.65 'Hanken Grotesk';color:#3f3c35;text-align:left">${esc(d.body || '')}</div>`;
-  return head + `<div style="text-align:center">${front}</div>` + (revealed
-    ? `<div data-answer style="margin-top:22px;text-align:center;animation:fadeUp .25s ease both">${answer}</div>`
-    : `<div style="margin-top:24px;text-align:center;font:600 11.5px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:#76736a">Tape pour révéler</div>`);
+
+  const body = revealed
+    ? `<div data-answer style="padding:0 24px 24px;font:400 15px/1.65 'Hanken Grotesk';color:#3f3c35;text-align:left;animation:fadeUp .25s ease both">${esc(d.body || '')}</div>`
+    : '';
+  return `<div style="display:flex;align-items:center;gap:8px;background:${cm.ink};color:#fff;padding:9px 46px 9px 16px">
+      <span aria-hidden="true" style="font:900 13px 'Noto Sans JP'">${esc(cm.kanji)}</span>
+      <span style="font:800 11px 'Hanken Grotesk';letter-spacing:.16em;text-transform:uppercase">${esc(d.cat)}</span>
+    </div>
+    <div class="rv-head" style="padding:26px 26px 20px;text-align:center">
+      <div class="rv-title" style="font:700 21px/1.35 'Hanken Grotesk';color:#111">${esc(d.title)}</div>
+    </div>
+    ${hint}${body}`;
 }
 
 function tplReview(){
@@ -714,7 +735,7 @@ function tplReview(){
       <div id="rv-stack" style="position:relative;max-height:100%;display:flex">
         ${remain > 2 ? ghost(24, .928, '0 26px 50px rgba(0,0,0,.28)') : ''}
         ${remain > 1 ? ghost(12, .966, '0 18px 40px rgba(0,0,0,.35)') : ''}
-        <div id="rv-card" class="rv-card" data-swipe style="position:relative;width:100%;max-height:100%;overflow-y:auto;background:#fff;border-radius:20px;padding:28px 26px 26px;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:rvIn .32s cubic-bezier(.25,.8,.3,1) both;cursor:pointer">
+        <div id="rv-card" class="rv-card" data-swipe style="position:relative;width:100%;max-height:100%;overflow-y:auto;overflow-x:hidden;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:rvIn .32s cubic-bezier(.25,.8,.3,1) both;cursor:pointer">
         <div data-hint-r aria-hidden="true" style="position:absolute;top:14px;left:14px;transform:rotate(-12deg);border:3px solid #00884A;color:#00884A;border-radius:8px;padding:2px 10px;font:900 13px 'Hanken Grotesk';letter-spacing:.06em;opacity:0;pointer-events:none">済 JE SAVAIS</div>
         <div data-hint-l aria-hidden="true" style="position:absolute;top:14px;right:14px;transform:rotate(12deg);border:3px solid #957100;color:#957100;border-radius:8px;padding:2px 10px;font:900 13px 'Hanken Grotesk';letter-spacing:.06em;opacity:0;pointer-events:none">À REVOIR</div>
         ${tplRvInner(d, r.revealed)}
