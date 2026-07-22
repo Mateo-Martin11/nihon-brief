@@ -739,35 +739,48 @@ function tplReview(){
    tampon unique par fiche : forme, taille, angle et couleur derives de l'id,
    kanji de categorie au centre, romaji grave en arc pour les fiches de langue.
    ========================================================================= */
-function stampSVG(d, got){
+/* Un carnet de stamp rally reel a des CASES IMPRIMEES sur la page — trait fin
+   continu, kanji en filigrane — et le tampon, quand il est pose, DEBORDE de sa
+   case, incline, jamais parfaitement centre. Le pointille etait un tic de CSS. */
+function bkShape(shapeR, inset, attrs){
+  if (shapeR < .55)  return `<circle cx="50" cy="50" r="${46 - inset}" ${attrs}/>`;
+  if (shapeR < .82)  return `<rect x="${7 + inset}" y="${7 + inset}" width="${86 - 2*inset}" height="${86 - 2*inset}" rx="${Math.max(4, 13 - inset/2)}" ${attrs}/>`;
+  const k = inset / 46;
+  const pts = [[50,4],[90,27],[90,73],[50,96],[10,73],[10,27]]
+    .map(([x,y]) => [(50 + (x-50)*(1-k)).toFixed(1), (50 + (y-50)*(1-k)).toFixed(1)].join(',')).join(' ');
+  return `<polygon points="${pts}" ${attrs}/>`;
+}
+
+// case imprimee : trait #d9d3c2, filigrane du kanji de categorie
+function frameSVG(d){
+  const cm = CAT_MAP[d.cat] || {kanji:'?'};
+  const glyph = (d.cat === 'Kanji' && d.jp) ? d.jp : cm.kanji;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%">
+    ${bkShape(srand(d.id,1), 2, 'fill="none" stroke="#d9d3c2" stroke-width="2"')}
+    <text x="50" y="50" dy="0.36em" text-anchor="middle" font-family="'Noto Sans JP',sans-serif" font-weight="900" font-size="${glyph.length > 1 ? 24 : 30}" fill="#8a8478" opacity=".15">${esc(glyph)}</text>
+  </svg>`;
+}
+
+// le tampon encre, pose PAR-DESSUS la case : plus grand qu'elle, tourne
+function inkStampSVG(d){
   const cm = CAT_MAP[d.cat] || {kanji:'?', ink:'#5c5c5c'};
   const s = n => srand(d.id, n);
-  const px = [58, 68, 80][Math.floor(s(3) * 2.999)];
-  const rot = (s(2) * 16 - 8).toFixed(1);
   const shapeR = s(1);
+  const rot = (s(2) * 16 - 8).toFixed(1);
+  const scale = (108 + s(3) * 16).toFixed(0);   // 108–124 % de la case
   const glyph = (d.cat === 'Kanji' && d.jp) ? d.jp : cm.kanji;
   const ink = cm.ink;
   const uid = 'st' + d.id;
-  let shape;
-  if (shapeR < .55) {
-    shape = got
-      ? `<circle cx="50" cy="50" r="46" fill="${ink}"/><circle cx="50" cy="50" r="38" fill="none" stroke="#fff" stroke-width="1.6" opacity=".85"/>`
-      : `<circle cx="50" cy="50" r="46" fill="none" stroke="${ink}" stroke-width="2.4" stroke-dasharray="5 4" opacity=".5"/>`;
-  } else if (shapeR < .82) {
-    shape = got
-      ? `<rect x="7" y="7" width="86" height="86" rx="14" fill="${ink}"/><rect x="14" y="14" width="72" height="72" rx="9" fill="none" stroke="#fff" stroke-width="1.6" opacity=".85"/>`
-      : `<rect x="7" y="7" width="86" height="86" rx="14" fill="none" stroke="${ink}" stroke-width="2.4" stroke-dasharray="5 4" opacity=".5"/>`;
-  } else {
-    shape = got
-      ? `<polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="${ink}"/><polygon points="50,12 83,31 83,69 50,88 17,69 17,31" fill="none" stroke="#fff" stroke-width="1.6" opacity=".85"/>`
-      : `<polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="none" stroke="${ink}" stroke-width="2.4" stroke-dasharray="5 4" opacity=".5"/>`;
-  }
-  const arc = (got && shapeR < .55 && (d.romaji || d.cat))
+  const arc = (shapeR < .55 && (d.romaji || d.cat))
     ? `<defs><path id="${uid}" d="M50,50 m-31,0 a31,31 0 1,1 62,0 a31,31 0 1,1 -62,0"/></defs>
        <text font-family="'Hanken Grotesk',sans-serif" font-size="7.5" font-weight="800" letter-spacing="1.6" fill="#fff" opacity=".9"><textPath href="#${uid}">${esc(((d.romaji || d.cat).toUpperCase() + ' · ').repeat(3).slice(0, 30))}</textPath></text>`
     : '';
-  const kanji = `<text x="50" y="50" dy="0.36em" text-anchor="middle" font-family="'Noto Sans JP',sans-serif" font-weight="900" font-size="${glyph.length > 1 ? 24 : 32}" fill="${got ? '#fff' : ink}"${got ? '' : ' opacity=".28"'}>${esc(glyph)}</text>`;
-  return `<svg viewBox="0 0 100 100" width="${px}" height="${px}" aria-hidden="true" style="transform:rotate(${rot}deg);${got ? 'filter:url(#ink)' : ''}">${shape}${arc}${kanji}</svg>`;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true" style="position:absolute;left:50%;top:50%;width:${scale}%;height:${scale}%;transform:translate(-50%,-50%) rotate(${rot}deg);filter:url(#ink)">
+    ${bkShape(shapeR, 0, `fill="${ink}"`)}
+    ${bkShape(shapeR, 8, 'fill="none" stroke="#fff" stroke-width="1.6" opacity=".85"')}
+    ${arc}
+    <text x="50" y="50" dy="0.36em" text-anchor="middle" font-family="'Noto Sans JP',sans-serif" font-weight="900" font-size="${glyph.length > 1 ? 24 : 32}" fill="#fff">${esc(glyph)}</text>
+  </svg>`;
 }
 
 function bookPages(){
@@ -814,34 +827,45 @@ function bookTurn(dir){
   }
 }
 
+/* Page de titre composee comme de l'imprimerie : double filet, compte en
+   exergue, index a points de conduite (les pointilles qui menent au chiffre,
+   comme un sommaire de livre). Plus un dashboard — une page imprimee. */
 function tplBkSummary(){
   const doneIds = state.mastered.filter(id => DATA.some(d => d.id === id));
   const rows = CATS.map(([n, k]) => {
     const tot = DATA.filter(d => d.cat === n).length;
     const got = DATA.filter(d => d.cat === n && doneIds.includes(d.id)).length;
     const full = got === tot && tot > 0;
-    return `<div style="display:flex;align-items:center;gap:6px;min-width:0">
-      <span aria-hidden="true" style="flex:none;width:18px;height:18px;border-radius:5px;background:${CAT_MAP[n].ink};color:#fff;font:900 10px 'Noto Sans JP';display:grid;place-items:center">${esc(k)}</span>
-      <span style="flex:1;font:600 10.5px 'Hanken Grotesk';color:#3f3c35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(n)}</span>
-      <span class="tnum" style="font:800 10.5px ${full ? "'Noto Sans JP'" : "'Hanken Grotesk'"};color:${full ? '#C6002B' : '#76736a'}">${full ? '完' : got + '/' + tot}</span>
+    return `<div style="display:flex;align-items:baseline;gap:6px;min-width:0">
+      <span aria-hidden="true" style="flex:none;font:900 11px 'Noto Sans JP';color:${CAT_MAP[n].ink}">${esc(k)}</span>
+      <span style="flex:none;max-width:70px;font:600 9.5px 'Hanken Grotesk';letter-spacing:.04em;color:#3f3c35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(n)}</span>
+      <span aria-hidden="true" style="flex:1;min-width:8px;border-bottom:1.5px dotted #c9c2b0;transform:translateY(-2px)"></span>
+      <span class="tnum" style="flex:none;font:${full ? "800 10px 'Noto Sans JP'" : "700 10px 'Hanken Grotesk'"};color:${full ? '#C6002B' : '#76736a'}">${full ? '完' : got + ' / ' + tot}</span>
     </div>`;
   }).join('');
-  return `<div style="text-align:center;border-bottom:2px solid #1a1a1a;padding-bottom:11px;margin-bottom:12px">
-    <div style="font:900 22px 'Noto Sans JP';color:#111">スタンプ帳</div>
-    <div style="font:700 10px 'Hanken Grotesk';letter-spacing:.26em;color:#76736a;margin-top:2px">CARNET DE TAMPONS</div>
-    <div class="tnum" style="margin-top:8px;font:900 30px 'Hanken Grotesk';color:#C6002B">${doneIds.length}<span style="font-size:15px;color:#76736a"> / ${DATA.length}</span></div>
+  return `<div style="text-align:center;padding-top:8px">
+    <div style="font:900 24px 'Noto Sans JP';color:#111;letter-spacing:.08em">スタンプ帳</div>
+    <div style="font:700 8.5px 'Hanken Grotesk';letter-spacing:.34em;color:#76736a;margin-top:4px">CARNET DE TAMPONS</div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 12px">${rows}</div>`;
+  <div aria-hidden="true" style="margin:12px 4px 0;border-top:2.5px solid #1a1a1a"></div>
+  <div aria-hidden="true" style="margin:2px 4px 13px;border-top:1px solid #1a1a1a"></div>
+  <div style="text-align:center;margin-bottom:13px">
+    <span class="tnum" style="font:900 27px 'Hanken Grotesk';color:#C6002B">${doneIds.length}</span>
+    <span class="tnum" style="font:700 13px 'Hanken Grotesk';color:#76736a"> / ${DATA.length}</span>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px 14px">${rows}</div>`;
 }
 
 function tplBkStamps(items){
-  return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px 4px;height:100%;align-content:space-evenly;justify-items:center">
+  return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px 6px;height:100%;align-content:space-evenly;justify-items:center">
     ${items.map(d => {
       const got = state.mastered.includes(d.id);
       const caption = d.jp || d.title;
       return `<div data-stampslot style="text-align:center;width:100%;min-width:0">
-        <div style="height:88px;display:grid;place-items:center">${stampSVG(d, got)}</div>
-        <div style="font:600 9.5px 'Hanken Grotesk','Noto Sans JP',sans-serif;color:#76736a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px" title="${esc(caption)}">${esc(caption)}</div>
+        <div style="position:relative;width:62px;height:62px;margin:0 auto">
+          ${frameSVG(d)}${got ? inkStampSVG(d) : ''}
+        </div>
+        <div style="margin-top:7px;font:600 9px 'Hanken Grotesk','Noto Sans JP',sans-serif;letter-spacing:.03em;color:#76736a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px" title="${esc(caption)}">${esc(caption)}</div>
       </div>`;
     }).join('')}
   </div>`;
@@ -867,16 +891,15 @@ function tplBook(){
   const dims = spread ? 'width:min(86vw,720px);height:min(78dvh,530px)' : 'width:min(88vw,340px);height:min(72dvh,500px)';
   const label = spread ? `${b.page + 1}–${Math.min(b.page + 2, N)} / ${N}` : `${b.page + 1} / ${N}`;
 
-  // couverture aizome : indigo, vagues seigaiha, coins dores de reliure
-  const gold = 'linear-gradient(135deg,#e8c96a,#b3892a)';
-  const corner = (pos, clip) => `<span aria-hidden="true" style="position:absolute;${pos};width:28px;height:28px;background:${gold};clip-path:${clip}"></span>`;
-  const cover = b.opened ? '' : `<div class="bk-cover" id="bk-cover" style="position:absolute;inset:0;z-index:5;border-radius:6px 14px 14px 6px;background:#22345c url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2256%22 height=%2228%22 viewBox=%220 0 56 28%22%3E%3Cg fill=%22none%22 stroke=%22%233a5286%22 stroke-width=%221.1%22%3E%3Ccircle cx=%220%22 cy=%2228%22 r=%2226%22/%3E%3Ccircle cx=%220%22 cy=%2228%22 r=%2219%22/%3E%3Ccircle cx=%220%22 cy=%2228%22 r=%2212%22/%3E%3Ccircle cx=%2228%22 cy=%2228%22 r=%2226%22/%3E%3Ccircle cx=%2228%22 cy=%2228%22 r=%2219%22/%3E%3Ccircle cx=%2228%22 cy=%2228%22 r=%2212%22/%3E%3Ccircle cx=%2256%22 cy=%2228%22 r=%2226%22/%3E%3Ccircle cx=%2256%22 cy=%2228%22 r=%2219%22/%3E%3Ccircle cx=%2256%22 cy=%2228%22 r=%2212%22/%3E%3Ccircle cx=%2214%22 cy=%2214%22 r=%2226%22/%3E%3Ccircle cx=%2214%22 cy=%2214%22 r=%2219%22/%3E%3Ccircle cx=%2242%22 cy=%2214%22 r=%2226%22/%3E%3Ccircle cx=%2242%22 cy=%2214%22 r=%2219%22/%3E%3C/g%3E%3C/svg%3E');background-size:56px 28px;box-shadow:inset 0 0 0 1.5px rgba(212,175,55,.4),inset 0 0 70px rgba(0,0,0,.4)">
-    ${corner('top:0;left:0', 'polygon(0 0,100% 0,0 100%)')}
-    ${corner('top:0;right:0', 'polygon(0 0,100% 0,100% 100%)')}
-    ${corner('bottom:0;left:0', 'polygon(0 0,0 100%,100% 100%)')}
-    ${corner('bottom:0;right:0', 'polygon(100% 0,100% 100%,0 100%)')}
-    <div class="vtx" style="position:absolute;top:20px;left:20px;background:#f6f3ea;border:1px solid #d9d4c5;border-radius:4px;padding:16px 8px;font:700 15px 'Noto Sans JP';color:#1a1a1a;letter-spacing:.22em;box-shadow:0 2px 8px rgba(0,0,0,.3)">日本ブリーフィング</div>
-    <div aria-hidden="true" style="position:absolute;bottom:22px;right:22px;width:40px;height:40px;border-radius:8px;background:#C6002B;color:#fff;display:grid;place-items:center;font:900 20px 'Noto Sans JP';transform:rotate(-6deg);filter:url(#ink)">済</div>
+  // couverture aizome : tissu indigo a vagues ton sur ton, tranche doree
+  // discrete, etiquette de titre a double cadre. Rien d'autre — la retenue
+  // fait l'objet.
+  const cover = b.opened ? '' : `<div class="bk-cover" id="bk-cover" style="position:absolute;inset:0;z-index:5;border-radius:6px 14px 14px 6px;background:#24375f url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2256%22 height=%2228%22 viewBox=%220 0 56 28%22%3E%3Cg fill=%22none%22 stroke=%22%23334e85%22 stroke-width=%221%22 stroke-opacity=%22.6%22%3E%3Ccircle cx=%220%22 cy=%2228%22 r=%2226%22/%3E%3Ccircle cx=%220%22 cy=%2228%22 r=%2219%22/%3E%3Ccircle cx=%220%22 cy=%2228%22 r=%2212%22/%3E%3Ccircle cx=%2228%22 cy=%2228%22 r=%2226%22/%3E%3Ccircle cx=%2228%22 cy=%2228%22 r=%2219%22/%3E%3Ccircle cx=%2228%22 cy=%2228%22 r=%2212%22/%3E%3Ccircle cx=%2256%22 cy=%2228%22 r=%2226%22/%3E%3Ccircle cx=%2256%22 cy=%2228%22 r=%2219%22/%3E%3Ccircle cx=%2256%22 cy=%2228%22 r=%2212%22/%3E%3Ccircle cx=%2214%22 cy=%2214%22 r=%2226%22/%3E%3Ccircle cx=%2214%22 cy=%2214%22 r=%2219%22/%3E%3Ccircle cx=%2242%22 cy=%2214%22 r=%2226%22/%3E%3Ccircle cx=%2242%22 cy=%2214%22 r=%2219%22/%3E%3C/g%3E%3C/svg%3E');background-size:56px 28px;box-shadow:inset 0 0 70px rgba(0,0,0,.38)">
+    <span aria-hidden="true" style="position:absolute;top:0;bottom:0;left:0;width:3px;background:linear-gradient(180deg,#c8a44e,#8f742e);opacity:.85;border-radius:6px 0 0 6px"></span>
+    <div class="vtx" style="position:absolute;top:18px;left:16px;background:#f6f3ea;border:1px solid #c9c2ae;border-radius:2px;padding:3px;box-shadow:0 2px 10px rgba(0,0,0,.35)">
+      <div class="vtx" style="border:1px solid #c9c2ae;border-radius:1px;padding:15px 7px;font:700 14px 'Noto Sans JP';color:#1a1a1a;letter-spacing:.24em">日本ブリーフィング</div>
+    </div>
+    <div aria-hidden="true" style="position:absolute;bottom:22px;right:22px;width:38px;height:38px;border-radius:7px;background:#C6002B;color:#fff;display:grid;place-items:center;font:900 19px 'Noto Sans JP';transform:rotate(-6deg);filter:url(#ink)">済</div>
   </div>`;
 
   const inAnim = (b.lastDir || 1) > 0 ? 'bkInL' : 'bkInR';
@@ -892,13 +915,13 @@ function tplBook(){
         </div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:18px;margin-top:16px">
-      <button type="button" id="bk-prev" class="hit" aria-label="Page précédente" ${b.page === 0 ? 'disabled' : ''} style="width:44px;height:44px;border-radius:50%;cursor:pointer;background:#2b2b2b;display:grid;place-items:center;${b.page === 0 ? 'opacity:.35;cursor:default' : ''}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:13px">
+      <button type="button" id="bk-prev" class="hit" aria-label="Page précédente" ${b.page === 0 ? 'disabled' : ''} style="width:44px;height:44px;cursor:pointer;display:grid;place-items:center;color:#cfcabd;${b.page === 0 ? 'opacity:.25;cursor:default' : ''}">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
       </button>
-      <span class="tnum" style="font:700 12px 'Hanken Grotesk';color:#cfcabd">${label}</span>
-      <button type="button" id="bk-next" class="hit" aria-label="Page suivante" ${b.page >= last ? 'disabled' : ''} style="width:44px;height:44px;border-radius:50%;cursor:pointer;background:#2b2b2b;display:grid;place-items:center;${b.page >= last ? 'opacity:.35;cursor:default' : ''}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      <span class="tnum" style="font:700 11px 'Hanken Grotesk';letter-spacing:.24em;color:#a5a094">${label}</span>
+      <button type="button" id="bk-next" class="hit" aria-label="Page suivante" ${b.page >= last ? 'disabled' : ''} style="width:44px;height:44px;cursor:pointer;display:grid;place-items:center;color:#cfcabd;${b.page >= last ? 'opacity:.25;cursor:default' : ''}">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
       </button>
     </div>
   </div>`;
