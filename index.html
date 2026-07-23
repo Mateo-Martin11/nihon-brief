@@ -743,13 +743,18 @@ function iaPanel(it){
 }
 
 /* Rangée d'actions de la fiche : carte (si la fiche a un lieu) puis IA. */
+/* Difficulté en petits monts Fuji : encrés selon le niveau, en contour
+   sinon. La montagne dit l'effort — aucun texte, aucune langue requise.
+   Les couleurs se surchargent pour poser le marqueur sur une bande sombre. */
+function fujiChip(dif, inkCol = '#6d675c', dimCol = '#c4bdae', snow = '#fff'){
+  if (!dif) return '';
+  const fuji = on => `<svg width="14" height="11" viewBox="0 0 14 11" aria-hidden="true"><path d="M1 10 L5.1 2.2 Q7 .7 8.9 2.2 L13 10 Z" fill="${on ? inkCol : 'none'}" stroke="${on ? inkCol : dimCol}" stroke-width="1.3" stroke-linejoin="round"/>${on ? `<path d="M5.05 3.1 L5.9 4.1 L7 2.9 L8.1 4.1 L8.95 3.1 Q7 1.3 5.05 3.1 Z" fill="${snow}"/>` : ''}</svg>`;
+  return `<span aria-label="Difficulté ${dif} sur 3" style="display:inline-flex;align-items:center;gap:2.5px">${[1,2,3].map(k => fuji(k <= dif)).join('')}</span>`;
+}
+
 function tplActions(it){
   const m = mapBtn(it), i = iaBtn(it);
-  const dif = DIF[it.id];
-  /* Difficulté en petits monts Fuji : encrés selon le niveau, en contour
-     sinon. La montagne dit l'effort — aucun texte, aucune langue requise. */
-  const fuji = on => `<svg width="14" height="11" viewBox="0 0 14 11" aria-hidden="true"><path d="M1 10 L5.1 2.2 Q7 .7 8.9 2.2 L13 10 Z" fill="${on ? '#6d675c' : 'none'}" stroke="${on ? '#6d675c' : '#c4bdae'}" stroke-width="1.3" stroke-linejoin="round"/>${on ? '<path d="M5.05 3.1 L5.9 4.1 L7 2.9 L8.1 4.1 L8.95 3.1 Q7 1.3 5.05 3.1 Z" fill="#fff"/>' : ''}</svg>`;
-  const chip = dif ? `<span aria-label="Difficulté ${dif} sur 3" style="display:inline-flex;align-items:center;gap:2.5px">${[1,2,3].map(k => fuji(k <= dif)).join('')}</span>` : '';
+  const chip = fujiChip(DIF[it.id]);
   if (!m && !i && !chip) return '';
   return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 10px 8px 16px"><span>${chip}</span><span style="display:flex;gap:8px">${m}${i}</span></div>${mapPanel(it)}${iaPanel(it)}`;
 }
@@ -1043,7 +1048,7 @@ function tplRvInner(d, revealed){
           : `<div aria-hidden="true" style="height:6px;background:${cm.ink}"></div>`);
     const body = d.body ? `<div style="padding:13px 20px 18px;font:400 14px/1.6 'Hanken Grotesk';color:#5a564d;background:#fbfaf7;text-align:left">${esc(d.body)}</div>` : '';
     return `<div class="rv-head" style="padding:30px 26px 22px;text-align:center">
-        <div style="display:flex;justify-content:center;margin-bottom:16px"><span style="display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="width:26px;height:26px;border-radius:8px;background:${cm.ink};color:#fff;font:900 14px 'Noto Sans JP';display:grid;place-items:center">${esc(cm.kanji)}</span><span style="font:700 11px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:${cm.ink}">${esc(d.cat)}</span></span></div>
+        <div style="display:flex;justify-content:center;margin-bottom:16px"><span style="display:inline-flex;align-items:center;gap:7px"><span aria-hidden="true" style="width:26px;height:26px;border-radius:8px;background:${cm.ink};color:#fff;font:900 14px 'Noto Sans JP';display:grid;place-items:center">${esc(cm.kanji)}</span><span style="font:700 11px 'Hanken Grotesk';letter-spacing:.14em;text-transform:uppercase;color:${cm.ink}">${esc(d.cat)}</span>${fujiChip(DIF[d.id])}</span></div>
         ${d.kana ? `<div style="font:500 15px 'Noto Sans JP';color:#777267;letter-spacing:.06em;margin-bottom:8px">${esc(d.kana)}</div>` : ''}
         <div class="${d.jp.length > 6 ? 'rv-jp-s' : 'rv-jp-l'}" style="font:700 ${d.jp.length > 6 ? 32 : 42}px 'Noto Sans JP';color:#111;line-height:1.25">${esc(d.jp)}</div>
         ${CONFIG.showRomaji && d.romaji ? `<div style="font:700 14px 'Hanken Grotesk';letter-spacing:.16em;text-transform:uppercase;color:${cm.ink};margin-top:10px">${esc(d.romaji)}</div>` : ''}
@@ -1058,6 +1063,7 @@ function tplRvInner(d, revealed){
   return `<div style="display:flex;align-items:center;gap:8px;background:${cm.ink};color:#fff;padding:9px 46px 9px 16px">
       <span aria-hidden="true" style="font:900 13px 'Noto Sans JP'">${esc(cm.kanji)}</span>
       <span style="font:800 11px 'Hanken Grotesk';letter-spacing:.16em;text-transform:uppercase">${esc(d.cat)}</span>
+      <span style="margin-left:auto;display:inline-flex">${fujiChip(DIF[d.id], '#fff', 'rgba(255,255,255,.5)', cm.ink)}</span>
     </div>
     <div class="rv-head" style="padding:26px 26px 20px;text-align:center">
       <div class="rv-title" style="font:700 21px/1.35 'Hanken Grotesk';color:#111">${esc(d.title)}</div>
@@ -2165,6 +2171,11 @@ function qzFact(d, pool){
 }
 
 function qzFor(d, pool){
+  const q = qzForInner(d, pool);
+  if (q) q.id = d.id;
+  return q;
+}
+function qzForInner(d, pool){
   const h = QZ[d.id];
   if (h) return qzMake(h.q, h.a, h.x.slice());
   if (d.meta) return qzMake(`Que signifie le kanji « ${d.jp} » ?`, d.meta,
@@ -2307,6 +2318,7 @@ function tplQzPlay(){
     <div style="flex:1;overflow-y:auto;padding:6px 18px 30px;box-sizing:border-box">
       <div style="max-width:560px;margin:0 auto;background:linear-gradient(90deg,transparent 15px,rgba(230,0,18,.16) 15px,rgba(230,0,18,.16) 16.4px,transparent 16.4px);padding-left:34px">
         <p style="margin:14px 0 4px;font:700 15px/1.55 'Hanken Grotesk';color:#141414"><span aria-hidden="true" style="font:900 14px 'Noto Sans JP';color:${ink('#E60012', QZ_PAPER)};margin-right:7px">問${q.i + 1}</span>${esc(cur.prompt)}</p>
+        <div style="display:flex;justify-content:flex-end;margin:6px 0 0">${fujiChip(DIF[cur.id])}</div>
         <div style="display:flex;flex-direction:column">${opts}</div>
         ${answered ? `<span role="status" style="position:absolute;left:-9999px">${q.picked === cur.ok ? 'Bonne réponse.' : 'Mauvaise réponse. La bonne réponse était : ' + esc(cur.opts[cur.ok])}</span>` : ''}
       <div style="min-height:58px;display:flex;align-items:center;justify-content:flex-end;padding-top:10px">
