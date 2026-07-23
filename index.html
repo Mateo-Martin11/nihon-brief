@@ -537,7 +537,7 @@ const DATA = [
 
 /* ------------------------------------------------------------------ état */
 const STORE_KEY = 'nihon-briefing-mastered';
-const state = { query:'', cat:'all', day:0, seg:'all', mastered:loadMastered(),
+const state = { query:'', cat:'all', day:0, seg:'all', dif:0, mastered:loadMastered(),
                 review:null, book:null, quiz:null, badges:loadBadges(),
                 iaOpen:null, mapOpen:null, iaLoading:null, iaError:null };
 
@@ -604,11 +604,12 @@ const GREY = {
 /* Partage entre le feed et le deck de revision : le mode revision herite
    exactement des filtres actifs (categorie, jour, etat, recherche). */
 function getFiltered(){
-  const {query, cat, day, seg, mastered} = state;
+  const {query, cat, day, seg, dif, mastered} = state;
   const q = norm(query);
   return DATA.map(d => ({...d, day: d.day || 1})).filter(d => {
     if (cat !== 'all' && d.cat !== cat) return false;
     if (day !== 0 && d.day !== day) return false;
+    if (dif && (DIF[d.id] || 2) !== dif) return false;
     const done = mastered.includes(d.id);
     if (seg === 'todo' && done) return false;
     if (seg === 'done' && !done) return false;
@@ -804,7 +805,7 @@ function tplCard(it){
 function focusKey(){
   const el = document.activeElement;
   if (!el || el === document.body) return null;
-  for (const a of ['data-cat','data-seg','data-day','data-stamp','data-ia','data-map']) {
+  for (const a of ['data-cat','data-seg','data-day','data-stamp','data-ia','data-map','data-dif']) {
     if (el.hasAttribute?.(a)) return `[${a}="${el.getAttribute(a)}"]`;
   }
   return el.id ? '#' + el.id : null;
@@ -827,7 +828,7 @@ function render(){
   const selEnd   = active && active.id === 'q' ? active.selectionEnd   : null;
 
   const {data, items} = selectItems();
-  const {query, cat, day, seg, mastered} = state;
+  const {query, cat, day, seg, dif, mastered} = state;
 
 
   const doneCount = mastered.filter(id => data.some(d => d.id === id)).length;
@@ -856,6 +857,12 @@ function render(){
     return `<button type="button" class="hit" data-day="${d.v}" aria-pressed="${active}" style="flex:none;cursor:pointer;border-radius:999px;padding:6px 13px;font:700 12px 'Hanken Grotesk';background:${active?'#fff':'transparent'};color:${active?'#141414':'#777268'};border:1.5px solid ${active?'#141414':'#dedbd1'}">${esc(d.label)}</button>`;
   }).join('');
 
+  /* Puces de difficulté : filtrent le feed ET le deck de révision.
+     Retape la puce active pour l'éteindre. */
+  const difChips = [1,2,3].map(n => {
+    const on = state.dif === n;
+    return `<button type="button" class="hit" data-dif="${n}" aria-pressed="${on}" aria-label="Difficulté ${n} sur 3" style="flex:none;cursor:pointer;border-radius:999px;padding:6px 11px;display:inline-flex;align-items:center;background:${on?'#fff':'transparent'};border:1.5px solid ${on?'#141414':'#dedbd1'}">${fujiChip(n)}</button>`;
+  }).join('');
   const feed = items.length
     ? items.map(it => it.isHeader
         ? `<div class="cell row-full">${tplHeader(it)}</div>`
@@ -885,6 +892,7 @@ function render(){
     <div class="hscroll gx" style="display:flex;gap:7px;overflow-x:auto;align-items:center">
       <div role="group" aria-label="État" style="flex:none;display:flex;background:#efede6;border-radius:999px;padding:3px">${segChips}</div>
       ${dayChips}
+      <div role="group" aria-label="Difficulté" style="flex:none;display:flex;gap:7px">${difChips}</div>
     </div>
   </nav>
 
@@ -927,7 +935,7 @@ function wire(){
   shell.addEventListener('click', e => {
     if (e.target.closest('#clear')) { state.query = ''; return render(); }
     if (e.target.closest('#reset')) {
-      Object.assign(state, {query:'', cat:'all', day:0, seg:'all'});
+      Object.assign(state, {query:'', cat:'all', day:0, seg:'all', dif:0});
       return render();
     }
     const cat = e.target.closest('[data-cat]');
@@ -936,8 +944,10 @@ function wire(){
     if (seg) { state.seg = seg.dataset.seg; return render(); }
     const day = e.target.closest('[data-day]');
     if (day) { state.day = Number(day.dataset.day); return render(); }
+    const df = e.target.closest('[data-dif]');
+    if (df) { const n = Number(df.dataset.dif); state.dif = state.dif === n ? 0 : n; return render(); }
     if (e.target.closest('#btn-home')) {
-      Object.assign(state, {query:'', cat:'all', day:0, seg:'all'});
+      Object.assign(state, {query:'', cat:'all', day:0, seg:'all', dif:0});
       render();
       window.scrollTo({top:0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
       return;
