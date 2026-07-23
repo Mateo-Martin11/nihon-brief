@@ -777,12 +777,14 @@ function iaPanel(it){
 
 /* Rangée d'actions de la fiche : carte (si la fiche a un lieu) puis IA. */
 /* Difficulté en petits monts Fuji : encrés selon le niveau, en contour
-   sinon. La montagne dit l'effort — aucun texte, aucune langue requise.
+   sinon. Le rang S ajoute le chrysanthème impérial doré au-dessus des
+   trois monts — le plus haut emblème du pays pour le plus haut rang.
    Les couleurs se surchargent pour poser le marqueur sur une bande sombre. */
-function fujiChip(dif, inkCol = '#6d675c', dimCol = '#c4bdae', snow = '#fff', label = ''){
+function fujiChip(dif, inkCol = '#6d675c', dimCol = '#c4bdae', snow = '#fff', label = '', gold = '#A6801D'){
   if (!dif) return '';
   const fuji = on => `<svg width="14" height="11" viewBox="0 0 14 11" aria-hidden="true"><path d="M1 10 L5.1 2.2 Q7 .7 8.9 2.2 L13 10 Z" fill="${on ? inkCol : 'none'}" stroke="${on ? inkCol : dimCol}" stroke-width="1.3" stroke-linejoin="round"/>${on ? `<path d="M5.05 3.1 L5.9 4.1 L7 2.9 L8.1 4.1 L8.95 3.1 Q7 1.3 5.05 3.1 Z" fill="${snow}"/>` : ''}</svg>`;
-  return `<span aria-label="${label || `Difficulté ${dif} sur 3`}" style="display:inline-flex;align-items:center;gap:2.5px">${[1,2,3].map(k => fuji(k <= dif)).join('')}</span>`;
+  const kiku = `<svg width="13" height="13" viewBox="-7 -7 14 14" aria-hidden="true"><circle r="1.7" fill="${gold}"/>${[0,45,90,135,180,225,270,315].map(a => `<path d="M0 -2.1 Q1.5 -4.2 0 -6.3 Q-1.5 -4.2 0 -2.1 Z" fill="${gold}" transform="rotate(${a})"/>`).join('')}</svg>`;
+  return `<span aria-label="${label || (dif >= 4 ? 'Difficulté S — le rang maximal' : `Difficulté ${dif} sur 3, S existant au-dessus`)}" style="display:inline-flex;align-items:center;gap:2.5px">${[1,2,3].map(k => fuji(k <= dif)).join('')}${dif >= 4 ? kiku : ''}</span>`;
 }
 
 function tplActions(it){
@@ -860,7 +862,7 @@ function render(){
 
   /* Puces de difficulté : filtrent le feed ET le deck de révision.
      Retape la puce active pour l'éteindre. */
-  const difChips = [1,2,3].map(n => {
+  const difChips = [1,2,3,4].map(n => {
     const on = state.dif === n;
     return `<button type="button" class="hit" data-dif="${n}" aria-pressed="${on}" aria-label="Difficulté ${n} sur 3" style="flex:none;cursor:pointer;border-radius:999px;padding:6px 11px;display:inline-flex;align-items:center;background:${on?'#fff':'transparent'};border:1.5px solid ${on?'#141414':'#dedbd1'}">${fujiChip(n)}</button>`;
   }).join('');
@@ -1521,7 +1523,7 @@ const DIF = {
   33: 2,
   34: 1,
   35: 1,
-  36: 3,
+  36: 4,
   37: 1,
   38: 1,
   39: 1,
@@ -1567,7 +1569,7 @@ const DIF = {
   79: 1,
   80: 1,
   81: 1,
-  82: 3,
+  82: 4,
   83: 1,
   84: 1,
   85: 1,
@@ -1608,7 +1610,7 @@ const DIF = {
   120: 3,
   121: 3,
   122: 2,
-  123: 3,
+  123: 4,
   124: 1,
   125: 1,
   126: 1,
@@ -1625,14 +1627,14 @@ const DIF = {
   137: 2,
   138: 1,
   139: 2,
-  140: 3,
+  140: 4,
   141: 1,
   142: 2,
   143: 2,
   144: 2,
   145: 3,
   146: 1,
-  147: 1,
+  147: 2,
   148: 1,
   149: 1,
   150: 1,
@@ -1658,8 +1660,8 @@ const DIF = {
   170: 2,
   171: 2,
   172: 2,
-  173: 3,
-  174: 3,
+  173: 4,
+  174: 4,
   175: 2,
   176: 2,
   177: 2,
@@ -1670,32 +1672,32 @@ const DIF = {
   182: 2,
   183: 3,
   184: 1,
-  185: 3,
+  185: 4,
   186: 3,
-  187: 3,
+  187: 4,
   188: 1,
   189: 2,
-  190: 3,
+  190: 4,
   191: 1,
   192: 3,
   193: 1,
   194: 1,
-  195: 3,
+  195: 4,
   196: 2,
   197: 3,
   198: 2,
   199: 2,
   200: 2,
   201: 3,
-  202: 2,
-  203: 3,
+  202: 3,
+  203: 4,
   204: 1,
   205: 1,
   206: 1,
   207: 2,
-  208: 3,
+  208: 4,
   209: 1,
-  210: 1,
+  210: 2,
   211: 2,
   212: 2,
   213: 1,
@@ -1703,11 +1705,11 @@ const DIF = {
   215: 2,
   216: 2,
   217: 1,
-  218: 3,
+  218: 4,
   219: 2,
-  220: 3,
-  221: 3,
-  222: 3,
+  220: 4,
+  221: 4,
+  222: 4,
   223: 1,
   224: 1,
   225: 3,
@@ -1717,99 +1719,99 @@ const DIF = {
   229: 1,
   230: 3,
   231: 3,
-  232: 3,
-  233: 3,
+  232: 4,
+  233: 4,
   234: 3,
-  235: 3,
+  235: 4,
   236: 2,
-  237: 2,
+  237: 3,
   238: 1,
-  239: 2,
+  239: 3,
   240: 3,
-  241: 3,
+  241: 4,
   242: 2,
   243: 2,
   244: 2,
   245: 3,
-  246: 3,
-  247: 3,
-  248: 2,
+  246: 4,
+  247: 4,
+  248: 3,
   249: 2,
-  250: 2,
-  251: 3,
-  252: 3,
+  250: 3,
+  251: 4,
+  252: 4,
   253: 2,
-  254: 2,
-  255: 3,
-  256: 2,
-  257: 2,
-  258: 3,
+  254: 3,
+  255: 4,
+  256: 3,
+  257: 3,
+  258: 4,
   259: 2,
   260: 1,
-  261: 3,
+  261: 4,
   262: 2,
   263: 2,
-  264: 3,
+  264: 4,
   265: 3,
-  266: 3,
+  266: 4,
   267: 3,
-  268: 3,
+  268: 4,
   269: 2,
-  270: 2,
-  271: 1,
-  272: 3,
+  270: 3,
+  271: 2,
+  272: 4,
   273: 2,
   274: 2,
-  275: 2,
-  276: 2,
-  277: 3,
-  278: 2,
+  275: 3,
+  276: 3,
+  277: 4,
+  278: 3,
   279: 2,
-  280: 2,
-  281: 1,
+  280: 3,
+  281: 2,
   282: 1,
-  283: 2,
-  284: 2,
-  285: 3,
-  286: 2,
-  287: 3,
-  288: 2,
-  289: 3,
-  290: 2,
-  291: 3,
+  283: 3,
+  284: 3,
+  285: 4,
+  286: 3,
+  287: 4,
+  288: 3,
+  289: 4,
+  290: 3,
+  291: 4,
   292: 1,
   293: 1,
-  294: 3,
+  294: 4,
   295: 1,
   296: 1,
   297: 1,
   298: 1,
-  299: 1,
+  299: 2,
   300: 2,
   301: 2,
   302: 2,
-  303: 2,
+  303: 3,
   304: 3,
-  305: 3,
+  305: 4,
   306: 1,
   307: 1,
-  308: 1,
-  309: 1,
-  310: 1,
-  311: 1,
+  308: 2,
+  309: 2,
+  310: 2,
+  311: 2,
   312: 2,
   313: 2,
   314: 2,
   315: 2,
   316: 2,
-  317: 2,
+  317: 3,
   318: 1,
   319: 1,
-  320: 1,
+  320: 2,
   321: 2,
   322: 2,
   323: 2,
-  324: 2,
+  324: 3,
 };
 
 /* Questions rédigées à la main, une par fiche — les 3 leurres portent sur le
@@ -2150,7 +2152,7 @@ const QZ = {
 const QZ_PAPER = [246, 243, 234];   // fond papier #f6f3ea du quiz, pour ink()
 /* Grades a la maniere des kentei : on gravit 三級 puis 二級 puis 一級.
    Seuil de reussite par grade, en part de bonnes reponses. */
-const KYU_NEED = [null, .75, .8, .9];
+const KYU_NEED = [null, .75, .8, .9, 1];
 
 /* Clé en littéral : loadBadges est hissée et tourne avant les const de ce
    bloc (init de state) — une const partagée serait encore en zone morte. */
@@ -2292,15 +2294,59 @@ function qzForInner(d, pool){
   return null;
 }
 
+/* =========================================================================
+   PROGRAMMES — examens transverses : un parcours, un sceau carré, une seule
+   épreuve (pas de grades). Le Kit du départ balaye toutes les catégories en
+   ne posant que du niveau 1 : le test « prêt à atterrir » pour le groupe.
+   ========================================================================= */
+const PROGS = [
+  {key:'prog:kit',     kanji:'旅', label:'Kit du départ', color:'#B4531F', cats:null, difs:[1], n:15, need:.8,
+   desc:'Les bases, sur tous les sujets'},
+  {key:'prog:survie',  kanji:'生', label:'Survie',        color:'#3D6B35', cats:['Vocabulaire','Langue','Étiquette','Transport','Argent','Santé'], difs:[1,2], n:12, need:.8,
+   desc:'L’utile sur place, zéro gaffe'},
+  {key:'prog:table',   kanji:'味', label:'À table',       color:'#A03D12', cats:['Plat','Boisson','Étiquette'], difs:null, n:12, need:.8,
+   desc:'Manger et boire sans fausse note'},
+  {key:'prog:culture', kanji:'雅', label:'Culture G',     color:'#4A3F7A', cats:['Histoire','Art','Religion','Cinéma','Manga & livres','Musique'], difs:null, n:12, need:.8,
+   desc:'Pour briller au dîner'},
+  {key:'prog:final',   kanji:'卒', label:'Examen final',  color:'#7A0E20', cats:null, difs:null, n:20, need:.9,
+   desc:'Tout, tous niveaux — le boss'},
+];
+
+/* Une question par catégorie à chaque passe (round-robin) : un programme
+   balaye les sujets au lieu d'enchaîner trois questions du même thème. */
+function buildProg(p){
+  const pool = DATA.filter(d => (!p.cats || p.cats.includes(d.cat)) && (!p.difs || p.difs.includes(DIF[d.id] || 2)));
+  const byCat = {};
+  for (const d of qzShuffle(pool)) (byCat[d.cat] ??= []).push(d);
+  const order = [];
+  let added = true;
+  while (added) {
+    added = false;
+    for (const cat of qzShuffle(Object.keys(byCat))) {
+      const d = byCat[cat].pop();
+      if (d) { order.push(d); added = true; }
+    }
+  }
+  const qs = [];
+  for (const d of order) {
+    if (qs.length >= p.n) break;
+    const q = qzFor(d, DATA);
+    if (q) qs.push(q);
+  }
+  return qs;
+}
+
 function buildQuiz(key, rank){
   const all = key === 'all' ? DATA : DATA.filter(d => d.cat === key);
   const tier = t => qzShuffle(all.filter(d => (DIF[d.id] || 2) === t));
-  /* L'examen du niveau N pioche d'abord dans les fiches de son niveau, puis
-     complète avec le niveau voisin — jamais à deux niveaux d'écart : pas de
-     fiche pointue dans l'examen facile, pas d'évidente dans le sommet. */
+  /* L'examen d'un niveau pioche d'abord dans les fiches de son niveau puis
+     complète avec les voisins — jamais de fiche pointue dans l'examen
+     facile, jamais d'évidente au sommet. L'examen S mélange 2/3/S : sa
+     difficulté, c'est le sans-faute. */
   const order = rank === 1 ? [...tier(1), ...tier(2)]
-              : rank === 3 ? [...tier(3), ...tier(2)]
-              : [...tier(2), ...qzShuffle([...tier(1), ...tier(3)])];
+              : rank === 2 ? [...tier(2), ...qzShuffle([...tier(1), ...tier(3)])]
+              : rank === 3 ? [...tier(3), ...tier(4), ...tier(2)]
+              : [...tier(4), ...tier(3), ...tier(2)];
   const max = rank === 1 ? 8 : 10;
   const qs = [];
   for (const d of order) {
@@ -2310,13 +2356,19 @@ function buildQuiz(key, rank){
   }
   return qzShuffle(qs);
 }
+
 function openQuiz(){
   state.review = null; state.book = null;
   state.quiz = {view:'menu'};
   renderOverlays();
 }
 function startQuiz(key){
-  const rank = Math.min(3, (state.badges[key] || 0) + 1);
+  if (key.startsWith('prog:')) {
+    const p = PROGS.find(x => x.key === key);
+    state.quiz = {view:'play', key, prog:p, rank:0, qs: buildProg(p), i:0, score:0, picked:null, newBadge:false};
+    return renderOverlays();
+  }
+  const rank = Math.min(4, (state.badges[key] || 0) + 1);
   state.quiz = {view:'play', key, rank, qs: buildQuiz(key, rank), i:0, score:0, picked:null, newBadge:false};
   renderOverlays();
 }
@@ -2331,33 +2383,48 @@ function nextQuiz(){
   const q = state.quiz;
   if (q.i + 1 < q.qs.length) { q.i++; q.picked = null; return renderOverlays(); }
   q.view = 'done';
-  const need = Math.ceil(q.qs.length * KYU_NEED[q.rank]);
-  if (q.score >= need && (state.badges[q.key] || 0) < q.rank) {
-    state.badges[q.key] = q.rank; saveBadges(); q.newBadge = true;
+  const target = q.prog ? 1 : q.rank;
+  const need = Math.ceil(q.qs.length * (q.prog ? q.prog.need : KYU_NEED[q.rank]));
+  if (q.score >= need && (state.badges[q.key] || 0) < target) {
+    state.badges[q.key] = target; saveBadges(); q.newBadge = true;
   }
   renderOverlays();
 }
 
-const qzCat = key => key === 'all'
-  ? ['Tout', '総', '#E60012']
-  : (c => [c[0], c[1], c[2]])(CATS.find(c => c[0] === key));
-
+const qzCat = key => {
+  if (key.startsWith('prog:')) { const p = PROGS.find(x => x.key === key); return [p.label, p.kanji, p.color]; }
+  if (key === 'all') return ['Tout', '総', '#E60012'];
+  const c = CATS.find(x => x[0] === key);
+  return [c[0], c[1], c[2]];
+};
 function tplQzMenu(){
   const total = CATS.length + 1;
-  const got = Object.keys(state.badges).length;
+  const got = Object.keys(state.badges).filter(k => !k.startsWith('prog:')).length;
+  const progRow = PROGS.map(p => {
+    const won = (state.badges[p.key] || 0) >= 1;
+    const col = won ? ink(p.color) : '#8a8478';
+    return `<button type="button" data-qzseal="${esc(p.key)}" class="hit" aria-label="Programme ${esc(p.label)}${won ? ' — réussi' : ''} : ${esc(p.desc)}" style="cursor:pointer;flex:none;display:flex;align-items:center;gap:10px;padding:9px 13px 9px 9px;border-radius:12px;border:1.5px ${won ? `solid ${col}` : 'dashed #c9c2b0'};background:${won ? col + '0d' : 'transparent'}">
+      <span aria-hidden="true" style="width:38px;height:38px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;border:2.2px solid ${col};color:${col};font:900 19px 'Noto Sans JP';transform:rotate(${won ? '-4' : '0'}deg)${won ? `;background:${col}14` : ''}">${p.kanji}</span>
+      <span style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left">
+        <span style="font:800 12px 'Hanken Grotesk';color:${won ? '#141414' : '#3a372f'}">${esc(p.label)}</span>
+        <span style="font:600 10px 'Hanken Grotesk';color:#6d675c">${esc(p.desc)}</span>
+      </span>
+    </button>`;
+  }).join('');
   const seals = [['all', '総', 'Tout', '#E60012'], ...CATS.map(c => [c[0], c[1], c[0], c[2]])]
     .map(([key, kanji, label, color], ix) => {
       const rank = state.badges[key] || 0;
-      const col = rank ? ink(color) : '#8a8478';
+      const col = rank ? (rank >= 4 ? '#A6801D' : ink(color)) : '#8a8478';
+      const kanCol = rank ? ink(color) : '#8a8478';
       const rot = (srand(ix + 3, 11) * 12 - 6).toFixed(1);
       const ring = rank >= 3 ? `;background:${col}1c;box-shadow:inset 0 0 0 2.5px #f6f3ea,inset 0 0 0 3.8px ${col}`
                  : rank === 2 ? `;background:${col}12;box-shadow:inset 0 0 0 2.5px #f6f3ea,inset 0 0 0 3.5px ${col}55`
                  : '';
-      const next = Math.min(3, rank + 1);
-      return `<button type="button" data-qzseal="${esc(key)}" class="hit" aria-label="Quiz ${esc(label)} — niveau ${rank} sur 3 obtenu, prochain examen niveau ${next}" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 2px 8px;border-radius:12px">
-        <span aria-hidden="true" style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:${rank ? `2.4px solid ${col}` : '2px dashed #a89f8d'};color:${col};font:900 23px 'Noto Sans JP';transform:rotate(${rot}deg)${ring}">${kanji}</span>
+      const next = Math.min(4, rank + 1);
+      return `<button type="button" data-qzseal="${esc(key)}" class="hit" aria-label="Quiz ${esc(label)} — niveau ${rank} sur 4 obtenu, prochain examen niveau ${next}" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 2px 8px;border-radius:12px">
+        <span aria-hidden="true" style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:${rank ? `2.4px solid ${col}` : '2px dashed #a89f8d'};color:${kanCol};font:900 23px 'Noto Sans JP';transform:rotate(${rot}deg)${ring}">${kanji}</span>
         <span style="font:700 11px 'Hanken Grotesk';color:${rank ? '#141414' : '#6d675c'};max-width:88px;text-align:center;line-height:1.15">${esc(label)}</span>
-        <span aria-hidden="true" style="min-height:12px;display:inline-flex">${rank ? fujiChip(rank, col, '#d5cfc0') : ''}</span>
+        <span aria-hidden="true" style="min-height:13px;display:inline-flex">${rank ? fujiChip(rank, col, '#d5cfc0') : ''}</span>
       </button>`;
     }).join('');
   return `<div class="ov ov-quiz" role="dialog" aria-modal="true" aria-label="Quiz">
@@ -2368,8 +2435,12 @@ function tplQzMenu(){
     </div>
     <div style="margin:0 16px;border-top:2.2px solid #141414"></div>
     <div style="margin:2.5px 16px 0;border-top:1px solid #141414"></div>
-    <p style="margin:0;padding:9px 18px 8px;font:600 12px 'Hanken Grotesk';color:#6d675c;text-align:center">Trois niveaux par sceau — chaque examen réussi encre un mont de plus (75, 80 puis 90 % de bonnes réponses).</p>
-    <div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:8px 6px;align-content:start;padding:2px 12px 34px;max-width:860px;width:100%;margin:0 auto;box-sizing:border-box">${seals}</div>
+    <div style="flex:1;overflow-y:auto;box-sizing:border-box">
+      <p style="margin:0;padding:9px 18px 2px;font:800 10px 'Hanken Grotesk';letter-spacing:.24em;color:#6d675c;max-width:860px;margin:0 auto">PROGRAMMES</p>
+      <div class="hscroll" style="display:flex;gap:8px;overflow-x:auto;padding:7px 14px 4px;max-width:860px;margin:0 auto;box-sizing:border-box">${progRow}</div>
+      <p style="margin:0;padding:10px 18px 2px;font:800 10px 'Hanken Grotesk';letter-spacing:.24em;color:#6d675c;max-width:860px;margin:0 auto">CATÉGORIES — quatre niveaux par sceau : 75, 80, 90 puis 100 % (sans-faute)</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:8px 6px;align-content:start;padding:4px 12px 34px;max-width:860px;width:100%;margin:0 auto;box-sizing:border-box">${seals}</div>
+    </div>
   </div>`;
 }
 
@@ -2432,13 +2503,13 @@ function tplQzPlay(){
 }
 
 function tplQzResult(){
-  const q = state.quiz, n = q.qs.length, need = Math.ceil(n * KYU_NEED[q.rank]);
+  const q = state.quiz, n = q.qs.length, need = Math.ceil(n * (q.prog ? q.prog.need : KYU_NEED[q.rank]));
   const [label, kanji, color] = qzCat(q.key);
   const win = q.score >= need;
   const col = win ? ink(color) : '#8a8478';
   const red = ink('#E60012', QZ_PAPER);
   const verdict = win ? '合格' : '不合格';
-  const msg = win ? (q.newBadge ? `Niveau ${q.rank} sur 3 décroché !` : 'Déjà au sommet — run de prestige.')
+  const msg = win ? (q.newBadge ? (q.prog ? 'Programme réussi !' : (q.rank >= 4 ? 'Rang S — le chrysanthème est à toi !' : `Niveau ${q.rank} sur 4 décroché !`)) : 'Déjà au sommet — run de prestige.')
                   : `Il fallait ${need} bonnes réponses sur ${n}.`;
   return `<div class="ov ov-quiz" role="dialog" aria-modal="true" aria-label="Résultat du quiz">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 4px">
@@ -2455,7 +2526,7 @@ function tplQzResult(){
         <div style="font:700 13px 'Hanken Grotesk';color:#3f3c35">${msg}${win && q.score === n ? ` <span style="color:${red};font-weight:800">満点 !</span>` : ''}</div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
-        <button type="button" id="qz-replay" data-autofocus style="cursor:pointer;background:#E60012;color:#fff;border-radius:10px;padding:14px 18px;font:800 13px 'Hanken Grotesk';letter-spacing:.05em">${(state.badges[q.key] || 0) < 3 && win ? 'NIVEAU SUIVANT' : 'REJOUER'}</button>
+        <button type="button" id="qz-replay" data-autofocus style="cursor:pointer;background:#E60012;color:#fff;border-radius:10px;padding:14px 18px;font:800 13px 'Hanken Grotesk';letter-spacing:.05em">${!q.prog && win && (state.badges[q.key] || 0) < 4 ? 'NIVEAU SUIVANT' : 'REJOUER'}</button>
         <button type="button" id="qz-menu2" style="cursor:pointer;background:transparent;color:#141414;border:1.6px solid #141414;border-radius:10px;padding:14px 18px;font:800 13px 'Hanken Grotesk';letter-spacing:.05em">TOUS LES SCEAUX</button>
       </div>
     </div>
