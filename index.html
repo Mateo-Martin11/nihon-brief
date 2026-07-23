@@ -746,7 +746,10 @@ function iaPanel(it){
 function tplActions(it){
   const m = mapBtn(it), i = iaBtn(it);
   const dif = DIF[it.id];
-  const chip = dif ? `<span aria-label="Difficulté ${dif} sur 3" style="display:inline-flex;align-items:baseline;gap:5px;font:800 10px 'Hanken Grotesk';letter-spacing:.14em;color:#76736a">難<span aria-hidden="true" style="font:900 12px 'Noto Sans JP';letter-spacing:.06em;color:${dif === 3 ? '#8f2d2d' : dif === 2 ? '#8a6d1a' : '#4c7a48'}">${DIF_KANJI[dif]}</span></span>` : '';
+  /* Difficulté en petits monts Fuji : encrés selon le niveau, en contour
+     sinon. La montagne dit l'effort — aucun texte, aucune langue requise. */
+  const fuji = on => `<svg width="14" height="11" viewBox="0 0 14 11" aria-hidden="true"><path d="M1 10 L5.1 2.2 Q7 .7 8.9 2.2 L13 10 Z" fill="${on ? '#6d675c' : 'none'}" stroke="${on ? '#6d675c' : '#c4bdae'}" stroke-width="1.3" stroke-linejoin="round"/>${on ? '<path d="M5.05 3.1 L5.9 4.1 L7 2.9 L8.1 4.1 L8.95 3.1 Q7 1.3 5.05 3.1 Z" fill="#fff"/>' : ''}</svg>`;
+  const chip = dif ? `<span aria-label="Difficulté ${dif} sur 3" style="display:inline-flex;align-items:center;gap:2.5px">${[1,2,3].map(k => fuji(k <= dif)).join('')}</span>` : '';
   if (!m && !i && !chip) return '';
   return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 10px 8px 16px"><span>${chip}</span><span style="display:flex;gap:8px">${m}${i}</span></div>${mapPanel(it)}${iaPanel(it)}`;
 }
