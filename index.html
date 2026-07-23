@@ -113,6 +113,7 @@
   @keyframes penDraw{to{stroke-dashoffset:0}}
   @keyframes qzPop{0%{transform:scale(2.2) rotate(-20deg);opacity:0}62%{transform:scale(.92) rotate(-3deg)}100%{transform:scale(1) rotate(-6deg);opacity:1}}
   .qz-pop{animation:qzPop .55s cubic-bezier(.2,1.2,.4,1) both}
+  button:not([disabled]):active{opacity:.72}
   .map-pulse{transform-box:fill-box;transform-origin:center;animation:mapPulse 2.4s ease-out infinite}
   @keyframes mapPulse{0%{transform:scale(.35);opacity:.7}75%{transform:scale(1.55);opacity:0}100%{transform:scale(1.55);opacity:0}}
   /* L'entree de la carte part de la pose EXACTE du premier fantome (12px,
@@ -1734,7 +1735,7 @@ const QZ = {
    catégorie. 80 % de bonnes réponses décrochent le sceau. Les mauvaises
    réponses sont piochées dans les autres fiches : aucun contenu à écrire.
    ========================================================================= */
-const QZ_PAPER = [242, 236, 221];   // fond #f2ecdd du quiz, pour ink()
+const QZ_PAPER = [246, 243, 234];   // fond papier #f6f3ea du quiz, pour ink()
 
 /* Clé en littéral : loadBadges est hissée et tourne avant les const de ce
    bloc (init de state) — une const partagée serait encore en zone morte. */
@@ -1914,23 +1915,23 @@ function tplQzMenu(){
   const seals = [['all', '総', 'Tout', '#E60012'], ...CATS.map(c => [c[0], c[1], c[0], c[2]])]
     .map(([key, kanji, label, color], ix) => {
       const has = state.badges.includes(key);
-      const col = has ? ink(color) : '#b3ac9c';
+      const col = has ? ink(color) : '#8a8478';
       const rot = (srand(ix + 3, 11) * 12 - 6).toFixed(1);
       return `<button type="button" data-qzseal="${esc(key)}" class="hit" aria-label="Quiz ${esc(label)}${has ? ' — sceau obtenu' : ''}" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;padding:10px 2px 8px;border-radius:12px">
-        <span aria-hidden="true" style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:${has ? `2.4px solid ${col}` : '2px dashed #c9c2b0'};color:${col};font:900 23px 'Noto Sans JP';transform:rotate(${rot}deg)${has ? `;background:${col}12;box-shadow:inset 0 0 0 2.5px #f6f3ea,inset 0 0 0 3.5px ${col}55` : ''}">${kanji}</span>
+        <span aria-hidden="true" style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:${has ? `2.4px solid ${col}` : '2px dashed #a89f8d'};color:${col};font:900 23px 'Noto Sans JP';transform:rotate(${rot}deg)${has ? `;background:${col}12;box-shadow:inset 0 0 0 2.5px #f6f3ea,inset 0 0 0 3.5px ${col}55` : ''}">${kanji}</span>
         <span style="font:700 11px 'Hanken Grotesk';color:${has ? '#141414' : '#6d675c'};max-width:88px;text-align:center;line-height:1.15">${esc(label)}</span>
       </button>`;
     }).join('');
   return `<div class="ov ov-quiz" role="dialog" aria-modal="true" aria-label="Quiz">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 4px">
       <button type="button" id="qz-close" data-autofocus class="hit" aria-label="Fermer le quiz" style="width:44px;height:44px;cursor:pointer;color:#141414;font:700 16px 'Hanken Grotesk'">✕</button>
-      <span style="font:900 17px 'Noto Sans JP';color:#141414">検定<span style="font:700 11px 'Hanken Grotesk';color:#76736a;margin-left:8px;letter-spacing:.2em">QUIZ</span></span>
-      <span class="tnum" style="font:800 12px 'Hanken Grotesk';color:${ink('#E60012')};min-width:44px;text-align:right">${state.badges.length}<span style="color:#76736a;font-weight:700">/${total}</span></span>
+      <span style="font:900 17px 'Noto Sans JP';color:#141414">検定<span style="font:700 11px 'Hanken Grotesk';color:#6d675c;margin-left:8px;letter-spacing:.2em">QUIZ</span></span>
+      <span class="tnum" style="font:800 12px 'Hanken Grotesk';color:${ink('#E60012', QZ_PAPER)};min-width:44px;text-align:right">${state.badges.length}<span style="color:#6d675c;font-weight:700">/${total}</span></span>
     </div>
     <div style="margin:0 16px;border-top:2.2px solid #141414"></div>
     <div style="margin:2.5px 16px 0;border-top:1px solid #141414"></div>
     <p style="margin:0;padding:9px 18px 8px;font:600 12px 'Hanken Grotesk';color:#6d675c;text-align:center">Carte de rallye — 80 % de bonnes réponses encrent le sceau de la catégorie.</p>
-    <div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:2px;align-content:start;padding:2px 12px 34px;max-width:860px;width:100%;margin:0 auto;box-sizing:border-box">${seals}</div>
+    <div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:8px 6px;align-content:start;padding:2px 12px 34px;max-width:860px;width:100%;margin:0 auto;box-sizing:border-box">${seals}</div>
   </div>`;
 }
 
@@ -1939,11 +1940,11 @@ function tplQzMenu(){
    coup de stylo. */
 function qzMaru(){
   return `<svg viewBox="0 0 38 38" width="38" height="38" aria-hidden="true" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:visible">
-    <path d="M19 3.6 C28.5 3.4 34.6 9.8 34.4 19 C34.2 27.8 27.6 34.4 18.6 34.3 C9.8 34.2 3.6 27.4 3.8 18.4 C4 10.2 9.6 4.6 17 3.8" fill="none" stroke="${ink('#E60012')}" stroke-width="2.7" stroke-linecap="round" style="stroke-dasharray:100;stroke-dashoffset:100;animation:penDraw .45s ease-out .05s forwards"/>
+    <path d="M19 3.6 C28.5 3.4 34.6 9.8 34.4 19 C34.2 27.8 27.6 34.4 18.6 34.3 C9.8 34.2 3.6 27.4 3.8 18.4 C4 10.2 9.6 4.6 17 3.8" fill="none" stroke="${ink('#E60012', QZ_PAPER)}" stroke-width="2.7" stroke-linecap="round" style="stroke-dasharray:100;stroke-dashoffset:100;animation:penDraw .45s ease-out .05s forwards"/>
   </svg>`;
 }
 function qzBatsu(){
-  const red = ink('#E60012');
+  const red = ink('#E60012', QZ_PAPER);
   return `<svg viewBox="0 0 38 38" width="34" height="34" aria-hidden="true" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:visible">
     <path d="M8 7.5 L30.5 30" fill="none" stroke="${red}" stroke-width="2.9" stroke-linecap="round" style="stroke-dasharray:34;stroke-dashoffset:34;animation:penDraw .22s ease-out .05s forwards"/>
     <path d="M30 8 L8.5 30.5" fill="none" stroke="${red}" stroke-width="2.9" stroke-linecap="round" style="stroke-dasharray:34;stroke-dashoffset:34;animation:penDraw .22s ease-out .28s forwards"/>
@@ -1962,7 +1963,7 @@ function tplQzPlay(){
     const dim = answered && !isOk && !isMiss;
     const sr = isOk ? ' — bonne réponse' : isMiss ? ' — ta réponse, fausse' : '';
     return `<button type="button" data-qzopt="${ix}" ${answered ? 'disabled' : (ix === 0 ? 'data-autofocus' : '')} aria-label="${esc(o)}${sr}" style="cursor:${answered ? 'default' : 'pointer'};display:flex;gap:10px;align-items:flex-start;text-align:left;min-height:52px;padding:14px 8px 14px 0;background:transparent;border-bottom:1px solid #e2dbc8;font:600 14px/1.5 'Hanken Grotesk';color:#141414;${dim ? 'opacity:.38;' : ''}">
-      <span aria-hidden="true" style="position:relative;flex:none;width:34px;display:flex;justify-content:center;font:700 16px 'Noto Sans JP';color:${isMiss ? ink('#E60012') : '#141414'}">${NUM[ix] || '⑤'}${isOk ? qzMaru() : ''}${isMiss ? qzBatsu() : ''}</span>
+      <span aria-hidden="true" style="position:relative;flex:none;width:34px;display:flex;justify-content:center;font:700 16px 'Noto Sans JP';color:${isMiss ? ink('#E60012', QZ_PAPER) : '#141414'}">${NUM[ix] || '⑤'}${isOk ? qzMaru() : ''}${isMiss ? qzBatsu() : ''}</span>
       <span style="padding-top:1px">${esc(o)}</span>
     </button>`;
   }).join('');
@@ -1973,16 +1974,17 @@ function tplQzPlay(){
         <span aria-hidden="true" style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:5px;background:${band};color:#fff;font:900 14px 'Noto Sans JP'">${kanji}</span>
         <span style="font:800 13px 'Hanken Grotesk';color:#141414;letter-spacing:.04em">${esc(label)}</span>
       </span>
-      <span class="tnum" style="font:800 12px 'Hanken Grotesk';color:#141414;min-width:44px;text-align:right"><span style="font:900 12px 'Noto Sans JP';color:${ink('#E60012')}">問</span> ${q.i + 1}<span style="color:#76736a;font-weight:700">/${q.qs.length}</span></span>
+      <span class="tnum" style="font:800 12px 'Hanken Grotesk';color:#141414;min-width:44px;text-align:right"><span style="font:900 12px 'Noto Sans JP';color:${ink('#E60012', QZ_PAPER)}">問</span> ${q.i + 1}<span style="color:#6d675c;font-weight:700">/${q.qs.length}</span></span>
     </div>
     <div style="margin:0 16px;border-top:2.2px solid #141414"></div>
     <div style="margin:2.5px 16px 0;border-top:1px solid #141414"></div>
     <div style="flex:1;overflow-y:auto;padding:6px 18px 30px;box-sizing:border-box">
       <div style="max-width:560px;margin:0 auto;background:linear-gradient(90deg,transparent 15px,rgba(230,0,18,.16) 15px,rgba(230,0,18,.16) 16.4px,transparent 16.4px);padding-left:34px">
-        <p style="margin:14px 0 4px;font:700 15px/1.55 'Hanken Grotesk';color:#141414"><span aria-hidden="true" style="font:900 14px 'Noto Sans JP';color:${ink('#E60012')};margin-right:7px">問${q.i + 1}</span>${esc(cur.prompt)}</p>
+        <p style="margin:14px 0 4px;font:700 15px/1.55 'Hanken Grotesk';color:#141414"><span aria-hidden="true" style="font:900 14px 'Noto Sans JP';color:${ink('#E60012', QZ_PAPER)};margin-right:7px">問${q.i + 1}</span>${esc(cur.prompt)}</p>
         <div style="display:flex;flex-direction:column">${opts}</div>
-        <div style="min-height:58px;display:flex;align-items:center;justify-content:flex-end;padding-top:10px">
-          ${answered ? `<button type="button" id="qz-next" data-autofocus style="cursor:pointer;background:#E60012;color:#fff;border-radius:10px;padding:12px 22px;font:800 13px 'Hanken Grotesk';letter-spacing:.06em">${q.i + 1 < q.qs.length ? 'SUIVANT' : 'RÉSULTAT'}</button>` : ''}
+        ${answered ? `<span role="status" style="position:absolute;left:-9999px">${q.picked === cur.ok ? 'Bonne réponse.' : 'Mauvaise réponse. La bonne réponse était : ' + esc(cur.opts[cur.ok])}</span>` : ''}
+      <div style="min-height:58px;display:flex;align-items:center;justify-content:flex-end;padding-top:10px">
+          ${answered ? `<button type="button" id="qz-next" data-autofocus style="cursor:pointer;background:#E60012;color:#fff;border-radius:10px;padding:14px 22px;font:800 13px 'Hanken Grotesk';letter-spacing:.06em">${q.i + 1 < q.qs.length ? 'SUIVANT' : 'RÉSULTAT'}</button>` : ''}
         </div>
       </div>
     </div>
@@ -1993,28 +1995,28 @@ function tplQzResult(){
   const q = state.quiz, n = q.qs.length, need = Math.ceil(n * 0.8);
   const [label, kanji, color] = qzCat(q.key);
   const win = q.score >= need;
-  const col = win ? ink(color) : '#b3ac9c';
-  const red = ink('#E60012');
+  const col = win ? ink(color) : '#8a8478';
+  const red = ink('#E60012', QZ_PAPER);
   const verdict = win ? '合格' : '不合格';
   const msg = win ? (q.newBadge ? `Sceau ${esc(label)} décroché !` : 'Sceau déjà en poche.')
                   : `Il fallait ${need} bonnes réponses sur ${n}.`;
   return `<div class="ov ov-quiz" role="dialog" aria-modal="true" aria-label="Résultat du quiz">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 4px">
       <button type="button" id="qz-close" class="hit" aria-label="Fermer le quiz" style="width:44px;height:44px;cursor:pointer;color:#141414;font:700 16px 'Hanken Grotesk'">✕</button>
-      <span style="font:900 17px 'Noto Sans JP';color:#141414">結果<span style="font:700 11px 'Hanken Grotesk';color:#76736a;margin-left:8px;letter-spacing:.2em">RÉSULTAT</span></span>
+      <span style="font:900 17px 'Noto Sans JP';color:#141414">結果<span style="font:700 11px 'Hanken Grotesk';color:#6d675c;margin-left:8px;letter-spacing:.2em">RÉSULTAT</span></span>
       <span style="min-width:44px"></span>
     </div>
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px">
       <div style="position:relative;width:min(330px,84vw);border:1.6px solid #141414;box-shadow:inset 0 0 0 3.5px #f6f3ea,inset 0 0 0 4.6px #141414;padding:30px 22px 26px;display:flex;flex-direction:column;align-items:center;gap:13px;text-align:center;background:#faf8f1">
-        <span style="font:800 10px 'Hanken Grotesk';letter-spacing:.3em;color:#76736a">検定試験 — ${esc(label).toUpperCase()}</span>
+        <span style="font:800 10px 'Hanken Grotesk';letter-spacing:.3em;color:#6d675c">検定試験 — ${esc(label).toUpperCase()}</span>
         <span aria-hidden="true" class="${q.newBadge ? 'qz-pop' : ''}" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:3px ${win ? 'solid' : 'dashed'} ${col};color:${col};font:900 44px 'Noto Sans JP';transform:rotate(-7deg)${win ? `;background:${col}10;box-shadow:inset 0 0 0 3px #faf8f1,inset 0 0 0 4px ${col}45` : ''}">${kanji}</span>
-        <div class="tnum" style="font:900 38px 'Hanken Grotesk';color:#141414;line-height:1">${q.score}<span style="font-size:19px;color:#76736a"> / ${n}</span></div>
-        <span aria-label="${win ? 'Réussi' : 'Échoué'}" style="display:inline-block;font:900 21px 'Noto Sans JP';color:${win ? red : '#8a8478'};border:2.6px solid ${win ? red : '#8a8478'};border-radius:7px;padding:3px 13px;transform:rotate(-5deg);letter-spacing:.1em${win ? `;text-shadow:0 0 1px ${red}55` : ''}">${verdict}</span>
+        <div class="tnum" style="font:900 38px 'Hanken Grotesk';color:#141414;line-height:1">${q.score}<span style="font-size:19px;color:#6d675c"> / ${n}</span></div>
+        <span aria-label="${win ? 'Réussi' : 'Échoué'}" style="display:inline-block;font:900 21px 'Noto Sans JP';color:${win ? red : '#6d675c'};border:2.6px solid ${win ? red : '#8a8478'};border-radius:7px;padding:3px 13px;transform:rotate(-5deg);letter-spacing:.1em${win ? `;text-shadow:0 0 1px ${red}55` : ''}">${verdict}</span>
         <div style="font:700 13px 'Hanken Grotesk';color:#3f3c35">${msg}${win && q.score === n ? ` <span style="color:${red};font-weight:800">満点 !</span>` : ''}</div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
-        <button type="button" id="qz-replay" data-autofocus style="cursor:pointer;background:#E60012;color:#fff;border-radius:10px;padding:12px 18px;font:800 13px 'Hanken Grotesk';letter-spacing:.05em">REJOUER</button>
-        <button type="button" id="qz-menu2" style="cursor:pointer;background:transparent;color:#141414;border:1.6px solid #141414;border-radius:10px;padding:12px 18px;font:800 13px 'Hanken Grotesk';letter-spacing:.05em">TOUS LES SCEAUX</button>
+        <button type="button" id="qz-replay" data-autofocus style="cursor:pointer;background:#E60012;color:#fff;border-radius:10px;padding:14px 18px;font:800 13px 'Hanken Grotesk';letter-spacing:.05em">REJOUER</button>
+        <button type="button" id="qz-menu2" style="cursor:pointer;background:transparent;color:#141414;border:1.6px solid #141414;border-radius:10px;padding:14px 18px;font:800 13px 'Hanken Grotesk';letter-spacing:.05em">TOUS LES SCEAUX</button>
       </div>
     </div>
   </div>`;
