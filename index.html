@@ -102,6 +102,7 @@
   .card{box-shadow:0 1px 2px rgba(30,26,20,.04),0 5px 16px rgba(30,26,20,.05)}
 
   /* --- overlays (revision + carnet) -------------------------------------- */
+  .hscroll{-webkit-mask-image:linear-gradient(90deg,#000 90%,transparent);mask-image:linear-gradient(90deg,#000 90%,transparent)}
   .ov{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;overscroll-behavior:contain}
   .ov-review{background:#141414}
   .ov-book{background:rgba(16,14,12,.97)}
@@ -891,8 +892,8 @@ function render(){
     <div class="hscroll gx chiprow" role="group" aria-label="Catégories" style="display:flex;gap:7px;overflow-x:auto;padding-top:1px;padding-bottom:1px">${catChips}</div>
     <div class="hscroll gx" style="display:flex;gap:7px;overflow-x:auto;align-items:center">
       <div role="group" aria-label="État" style="flex:none;display:flex;background:#efede6;border-radius:999px;padding:3px">${segChips}</div>
-      ${dayChips}
       <div role="group" aria-label="Difficulté" style="flex:none;display:flex;gap:7px">${difChips}</div>
+      ${dayChips}
     </div>
   </nav>
 
