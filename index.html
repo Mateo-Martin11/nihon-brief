@@ -917,35 +917,49 @@ function tlLabel(id){
 }
 function tlYearTxt(y){ return y < 0 ? '−' + Math.abs(y).toLocaleString('fr-FR').replace(/ /g, ' ') : String(y); }
 
-/* Ères réelles du Japon : la frise apprend le découpage du temps en même
-   temps qu'elle situe l'événement. */
-const tlEra = y => y < 0 ? 'JŌMON' : y < 794 ? 'ANTIQUITÉ' : y < 1185 ? 'HEIAN' : y < 1603 ? 'L’ÂGE DES GUERRIERS' : y < 1868 ? 'EDO' : y < 1926 ? 'MEIJI · TAISHŌ' : y < 1989 ? 'SHŌWA' : y < 2019 ? 'HEISEI' : 'REIWA';
+/* La frise ne montre que l'ossature : les ères du Japon et une dizaine de
+   repères majeurs. La fiche courante s'insère à sa place en terminus rouge —
+   quel que soit le nombre de fiches datées, la ligne reste courte. */
+const TL_ERAS = [
+  ['JŌMON', 'la préhistoire japonaise', -99999],
+  ['ANTIQUITÉ', 'l’écriture arrive de Chine', 0],
+  ['HEIAN', '794 – 1185', 794],
+  ['L’ÂGE DES GUERRIERS', '1185 – 1603', 1185],
+  ['EDO', '1603 – 1868', 1603],
+  ['MEIJI · TAISHŌ', '1868 – 1926', 1868],
+  ['SHŌWA', '1926 – 1989', 1926],
+  ['HEISEI', '1989 – 2019', 1989],
+  ['REIWA', 'depuis 2019', 2019],
+];
+const TL_KEY = new Set([235, 61, 355, 168, 356, 20, 103, 208, 27, 329]);
 
 function tlPanel(it){
   if (state.tlOpen !== it.id) return '';
   const focus = state.tlFocus ?? it.id;
-  const sorted = TL.slice().sort((a, b) => a[1] - b[1]);
-  const rail = "background:linear-gradient(#b7b0a0,#b7b0a0) center/2.2px 100% no-repeat";
-  let era = null, rows = '';
-  for (const [id, y] of sorted) {
-    const e = tlEra(y);
-    if (e !== era) {
-      era = e;
-      rows += `<div style="display:flex;align-items:stretch"><span style="flex:none;width:56px"></span><span style="flex:none;width:20px;${rail}"></span><span style="padding:11px 0 3px 10px;font:800 9.5px 'Hanken Grotesk';letter-spacing:.22em;color:#8a8478">${e}</span></div>`;
+  const shown = TL.filter(([id]) => TL_KEY.has(id) || id === it.id).sort((a, b) => a[1] - b[1]);
+  let rows = '';
+  TL_ERAS.forEach(([era, sub, from], k) => {
+    const to = k + 1 < TL_ERAS.length ? TL_ERAS[k + 1][2] : 99999;
+    rows += `<div style="display:flex;align-items:baseline;gap:8px;padding:11px 0 3px 86px"><span style="font:800 10px 'Hanken Grotesk';letter-spacing:.2em;color:#57534a">${era}</span><span style="font:600 9.5px 'Hanken Grotesk';color:#a29b8b">${sub}</span></div>`;
+    for (const [id, y] of shown) {
+      if (y < from || y >= to) continue;
+      const mine = id === it.id, foc = id === focus;
+      const dot = mine
+        ? `width:14px;height:14px;border-radius:50%;background:#E60012;border:2.6px solid #fff;box-shadow:0 0 0 1.6px #E60012`
+        : `width:${foc ? 12 : 10}px;height:${foc ? 12 : 10}px;border-radius:50%;background:#fff;border:${foc ? '2.8px solid #141414' : '2.2px solid #8a8478'}`;
+      rows += `<button type="button" data-tldot="${id}"${mine ? ' data-tlme="1" aria-current="true"' : ''}${foc ? ' data-focus="1"' : ''} aria-label="${tlYearTxt(y)} — ${esc(tlLabel(id))}" style="cursor:pointer;position:relative;display:flex;align-items:center;width:100%;text-align:left;background:${foc ? '#fffef8' : 'transparent'};border-radius:9px">
+        <span class="tnum" style="flex:none;width:58px;text-align:right;font:800 11.5px 'Hanken Grotesk';color:${mine ? ink('#E60012') : '#6d675c'}">${tlYearTxt(y)}</span>
+        <span style="flex:none;width:22px;display:flex;align-items:center;justify-content:center"><span style="flex:none;${dot}"></span></span>
+        <span style="padding:12px 8px 12px 8px;font:${foc || mine ? 700 : 600} 12.5px/1.4 'Hanken Grotesk';color:${foc || mine ? '#141414' : '#57534a'}">${esc(tlLabel(id))}</span>
+      </button>`;
     }
-    const mine = id === it.id, foc = id === focus;
-    const dot = mine
-      ? `width:13px;height:13px;border-radius:50%;background:#E60012;border:2.4px solid #fff;box-shadow:0 0 0 1.5px #E60012`
-      : `width:${foc ? 12 : 9}px;height:${foc ? 12 : 9}px;border-radius:50%;background:#fff;border:${foc ? '2.6px solid #141414' : '2px solid #8a8478'}`;
-    rows += `<button type="button" data-tldot="${id}"${mine ? ' data-tlme="1" aria-current="true"' : ''}${foc ? ' data-focus="1"' : ''} aria-label="${tlYearTxt(y)} — ${esc(tlLabel(id))}" style="cursor:pointer;display:flex;align-items:center;width:100%;text-align:left;background:${foc ? '#fffef8' : 'transparent'};border-radius:9px">
-      <span class="tnum" style="flex:none;width:56px;text-align:right;font:800 11px 'Hanken Grotesk';color:${mine ? ink('#E60012') : '#6d675c'}">${tlYearTxt(y)}</span>
-      <span style="flex:none;width:20px;align-self:stretch;display:flex;align-items:center;justify-content:center;${rail}"><span style="flex:none;${dot}"></span></span>
-      <span style="padding:12px 8px 12px 10px;font:${foc || mine ? 700 : 600} 12px/1.4 'Hanken Grotesk';color:${foc || mine ? '#141414' : '#57534a'}">${esc(tlLabel(id))}</span>
-    </button>`;
-  }
+  });
   return `<div role="region" aria-label="Frise chronologique" style="border-top:1px solid #eceae3;background:#f7f4ec;padding:8px 6px 8px">
-    <div data-tlpanel style="max-height:330px;overflow-y:auto;overscroll-behavior:contain">${rows}</div>
-    <p style="margin:7px 0 0;text-align:center;font:600 10.5px 'Hanken Grotesk';color:#76736a">La ligne du temps — le terminus rouge, c'est cette fiche.</p>
+    <div data-tlpanel style="position:relative;max-height:340px;overflow-y:auto;overscroll-behavior:contain">
+      <div aria-hidden="true" style="position:absolute;left:67.9px;top:6px;bottom:6px;width:2.2px;background:#b7b0a0;border-radius:2px"></div>
+      <div style="position:relative">${rows}</div>
+    </div>
+    <p style="margin:7px 0 0;text-align:center;font:600 10.5px 'Hanken Grotesk';color:#76736a">Les ères du Japon et leurs repères — le terminus rouge, c'est cette fiche.</p>
   </div>`;
 }
 
