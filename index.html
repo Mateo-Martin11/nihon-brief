@@ -940,24 +940,24 @@ function tlPanel(it){
   let rows = '';
   TL_ERAS.forEach(([era, sub, from], k) => {
     const to = k + 1 < TL_ERAS.length ? TL_ERAS[k + 1][2] : 99999;
-    rows += `<div style="display:flex;align-items:baseline;gap:8px;padding:11px 0 3px 86px"><span style="font:800 10px 'Hanken Grotesk';letter-spacing:.2em;color:#57534a">${era}</span><span style="font:600 9.5px 'Hanken Grotesk';color:#a29b8b">${sub}</span></div>`;
-    for (const [id, y] of shown) {
-      if (y < from || y >= to) continue;
+    const stations = shown.filter(([, y]) => y >= from && y < to);
+    rows += `<div style="display:flex;align-items:baseline;gap:8px;padding:${k === 0 ? 6 : 16}px 0 5px 96px"><span style="font:800 11px 'Hanken Grotesk';letter-spacing:.18em;color:#3f3c35">${era}</span><span style="font:600 10px 'Hanken Grotesk';color:#948c7b">${sub}</span></div>`;
+    for (const [id, y] of stations) {
       const mine = id === it.id, foc = id === focus;
       const dot = mine
-        ? `width:14px;height:14px;border-radius:50%;background:#E60012;border:2.6px solid #fff;box-shadow:0 0 0 1.6px #E60012`
-        : `width:${foc ? 12 : 10}px;height:${foc ? 12 : 10}px;border-radius:50%;background:#fff;border:${foc ? '2.8px solid #141414' : '2.2px solid #8a8478'}`;
-      rows += `<button type="button" data-tldot="${id}"${mine ? ' data-tlme="1" aria-current="true"' : ''}${foc ? ' data-focus="1"' : ''} aria-label="${tlYearTxt(y)} — ${esc(tlLabel(id))}" style="cursor:pointer;position:relative;display:flex;align-items:center;width:100%;text-align:left;background:${foc ? '#fffef8' : 'transparent'};border-radius:9px">
-        <span class="tnum" style="flex:none;width:58px;text-align:right;font:800 11.5px 'Hanken Grotesk';color:${mine ? ink('#E60012') : '#6d675c'}">${tlYearTxt(y)}</span>
-        <span style="flex:none;width:22px;display:flex;align-items:center;justify-content:center"><span style="flex:none;${dot}"></span></span>
-        <span style="padding:12px 8px 12px 8px;font:${foc || mine ? 700 : 600} 12.5px/1.4 'Hanken Grotesk';color:${foc || mine ? '#141414' : '#57534a'}">${esc(tlLabel(id))}</span>
+        ? `width:15px;height:15px;border-radius:50%;background:#E60012;border:2.8px solid #fff;box-shadow:0 0 0 1.8px #E60012`
+        : `width:${foc ? 13 : 11}px;height:${foc ? 13 : 11}px;border-radius:50%;background:#fff;border:${foc ? '3px solid #141414' : '2.4px solid #6d675c'}`;
+      rows += `<button type="button" data-tldot="${id}"${mine ? ' data-tlme="1" aria-current="true"' : ''}${foc ? ' data-focus="1"' : ''} aria-label="${tlYearTxt(y)} — ${esc(tlLabel(id))}" style="margin:0;padding:0;border:0;cursor:pointer;display:flex;align-items:center;width:100%;text-align:left;background:${foc ? '#fffef7' : 'transparent'};border-radius:10px">
+        <span class="tnum" style="flex:none;width:62px;text-align:right;font:800 12px 'Hanken Grotesk';color:${mine ? ink('#E60012') : '#57534a'}">${tlYearTxt(y)}</span>
+        <span style="flex:none;width:24px;display:flex;align-items:center;justify-content:center"><span style="flex:none;${dot}"></span></span>
+        <span style="padding:13px 10px 13px 8px;font:${foc || mine ? 700 : 600} 13px/1.45 'Hanken Grotesk';color:${foc || mine ? '#141414' : '#4d4941'}">${esc(tlLabel(id))}</span>
       </button>`;
     }
   });
   return `<div role="region" aria-label="Frise chronologique" style="border-top:1px solid #eceae3;background:#f7f4ec;padding:8px 6px 8px">
-    <div data-tlpanel style="max-height:340px;overflow-y:auto;overscroll-behavior:contain">
+    <div data-tlpanel style="max-height:350px;overflow-y:auto;overscroll-behavior:contain">
       <div style="position:relative">
-        <div aria-hidden="true" style="position:absolute;left:67.9px;top:8px;bottom:8px;width:2.2px;background:#b7b0a0;border-radius:2px"></div>
+        <div data-tlrail aria-hidden="true" style="position:absolute;left:72.7px;top:10px;bottom:10px;width:2.6px;background:#a29a87;border-radius:2px"></div>
         ${rows}
       </div>
     </div>
