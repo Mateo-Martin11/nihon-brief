@@ -641,7 +641,7 @@ const DATA = [
 const STORE_KEY = 'nihon-briefing-mastered';
 const state = { query:'', cat:'all', day:0, seg:'all', dif:0, mastered:loadMastered(),
                 review:null, book:null, quiz:null, badges:loadBadges(),
-                iaOpen:null, mapOpen:null, iaLoading:null, iaError:null };
+                iaOpen:null, mapOpen:null, qOpen:null, qCard:null, iaLoading:null, iaError:null };
 
 function loadMastered(){
   try { const m = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); return Array.isArray(m) ? m : []; }
@@ -891,11 +891,61 @@ function fujiChip(dif, inkCol = '#6d675c', dimCol = '#c4bdae', snow = '#fff', la
   return `<span aria-label="${label || `Difficulté ${dif} sur 3, rang S au-dessus`}" style="display:inline-flex;align-items:center;gap:2.5px">${[1,2,3].map(k => fuji(k <= dif)).join('')}</span>`;
 }
 function tplActions(it){
-  const m = mapBtn(it), i = iaBtn(it);
+  const m = mapBtn(it), i = iaBtn(it), s = sayBtn(it), q = qBtn(it);
   const chip = fujiChip(DIF[it.id]);
-  if (!m && !i && !chip) return '';
-  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 10px 8px 16px"><span>${chip}</span><span style="display:flex;gap:8px">${m}${i}</span></div>${mapPanel(it)}${iaPanel(it)}`;
+  if (!m && !i && !s && !q && !chip) return '';
+  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 10px 8px 16px"><span style="flex:none">${chip}</span><span style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end">${m}${s}${q}${i}</span></div>${mapPanel(it)}${qPanel(it)}${iaPanel(it)}`;
 }
+
+/* Prononciation : la synthèse vocale du système lit le japonais de la
+   fiche. Aucune ressource externe — la voix ja-JP vit dans le téléphone. */
+function sayBtn(it){
+  if (!(it.jp || it.kana) || !('speechSynthesis' in window)) return '';
+  return `<button type="button" class="hit" data-say="${it.id}" aria-label="Écouter « ${esc(it.jp || it.kana)} » en japonais" style="cursor:pointer;font:800 10px 'Hanken Grotesk';letter-spacing:.14em;color:#76736a;background:transparent;border:1px solid #d9d4c8;border-radius:999px;padding:4px 12px"><span style="font:800 10px 'Noto Sans JP';letter-spacing:0">音</span> ÉCOUTER</button>`;
+}
+
+function sayJp(id){
+  const d = DATA.find(x => x.id === id);
+  if (!d) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(d.jp || d.kana);
+    u.lang = 'ja-JP';
+    u.rate = 0.85;
+    const v = speechSynthesis.getVoices().find(x => x.lang && x.lang.replace('_', '-').startsWith('ja'));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+/* La question de la fiche, jouable sur place : le QCM manuel de la carte
+   s'ouvre sous elle, correction immédiate, sans toucher aux sceaux. */
+function qBtn(it){
+  if (!QZ[it.id]) return '';
+  const open = state.qOpen === it.id;
+  return `<button type="button" class="hit" data-q="${it.id}" aria-expanded="${open}" aria-label="Répondre à la question de cette fiche" style="cursor:pointer;font:800 10px 'Hanken Grotesk';letter-spacing:.14em;color:${open ? '#fff' : '#76736a'};background:${open ? '#141414' : 'transparent'};border:1px solid ${open ? '#141414' : '#d9d4c8'};border-radius:999px;padding:4px 12px;transition:background .15s,color .15s"><span style="font:800 10px 'Noto Sans JP';letter-spacing:0">問</span> QUESTION</button>`;
+}
+
+function qPanel(it){
+  const qc = state.qCard;
+  if (state.qOpen !== it.id || !qc || qc.id !== it.id) return '';
+  const done = qc.picked != null;
+  const opts = qc.opts.map((o, ix) => {
+    let bg = '#fff', bd = '#ddd8cb', col = '#141414', mark = '';
+    if (done) {
+      if (ix === qc.ok)         { bg = '#0B7A41'; bd = '#0B7A41'; col = '#fff'; mark = '✓ '; }
+      else if (ix === qc.picked){ bg = '#B3261E'; bd = '#B3261E'; col = '#fff'; mark = '✗ '; }
+      else                      { col = '#8a857a'; }
+    }
+    return `<button type="button" data-qopt-card="${ix}" ${done ? 'disabled' : ''} style="cursor:${done ? 'default' : 'pointer'};text-align:left;border-radius:9px;border:1.4px solid ${bd};background:${bg};color:${col};font:600 12.5px/1.45 'Hanken Grotesk';padding:9px 11px">${mark}${esc(o)}</button>`;
+  }).join('');
+  return `<div role="region" aria-label="Question de la fiche" style="border-top:1px solid #eceae3;background:#fbfaf7;padding:11px 14px 13px;display:flex;flex-direction:column;gap:7px;text-align:left">
+    <p style="margin:0 0 2px;font:700 13px/1.5 'Hanken Grotesk';color:#141414"><span aria-hidden="true" style="font:900 12px 'Noto Sans JP';color:${ink('#E60012')};margin-right:6px">問</span>${esc(QZ[it.id].q)}</p>
+    ${opts}
+    ${done ? `<span role="status" style="font:700 11.5px 'Hanken Grotesk';color:${qc.picked === qc.ok ? ink('#0B7A41') : ink('#B3261E')}">${qc.picked === qc.ok ? 'Bonne réponse.' : 'Raté — la bonne réponse est cochée.'}</span>` : ''}
+  </div>`;
+}
+
 function tplCard(it){
   const inner = it.isVocab ? tplVocab(it) : it.isHybrid ? tplHybrid(it) : tplPlain(it);
   return `<div class="card" style="position:relative;background:#fff;border:1.5px solid ${it.borderColor};border-radius:16px;overflow:hidden;animation:fadeUp .25s ease both">
@@ -911,7 +961,7 @@ function tplCard(it){
 function focusKey(){
   const el = document.activeElement;
   if (!el || el === document.body) return null;
-  for (const a of ['data-cat','data-seg','data-day','data-stamp','data-ia','data-map','data-dif']) {
+  for (const a of ['data-cat','data-seg','data-day','data-stamp','data-ia','data-map','data-dif','data-say','data-q']) {
     if (el.hasAttribute?.(a)) return `[${a}="${el.getAttribute(a)}"]`;
   }
   return el.id ? '#' + el.id : null;
@@ -1061,6 +1111,22 @@ function wire(){
     if (e.target.closest('#btn-review')) return openReview();
     if (e.target.closest('#btn-book'))   return openBook();
     if (e.target.closest('#btn-quiz'))   return openQuiz();
+    const au = e.target.closest('[data-say]');
+    if (au) { sayJp(Number(au.dataset.say)); return; }
+    const qb = e.target.closest('[data-q]');
+    if (qb) {
+      const id = Number(qb.dataset.q);
+      if (state.qOpen === id) { state.qOpen = null; state.qCard = null; }
+      else {
+        const h = QZ[id];
+        const opts = qzShuffle([h.a, ...h.x]);
+        state.qOpen = id;
+        state.qCard = {id, opts, ok: opts.indexOf(h.a), picked: null};
+      }
+      return render();
+    }
+    const qo = e.target.closest('[data-qopt-card]');
+    if (qo && state.qCard && state.qCard.picked == null) { state.qCard.picked = Number(qo.dataset.qoptCard); return render(); }
     const mp = e.target.closest('[data-map]');
     if (mp) { const id = Number(mp.dataset.map); state.mapOpen = state.mapOpen === id ? null : id; return render(); }
     const ia = e.target.closest('[data-ia]');
