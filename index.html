@@ -955,9 +955,11 @@ function tlPanel(it){
     }
   });
   return `<div role="region" aria-label="Frise chronologique" style="border-top:1px solid #eceae3;background:#f7f4ec;padding:8px 6px 8px">
-    <div data-tlpanel style="position:relative;max-height:340px;overflow-y:auto;overscroll-behavior:contain">
-      <div aria-hidden="true" style="position:absolute;left:67.9px;top:6px;bottom:6px;width:2.2px;background:#b7b0a0;border-radius:2px"></div>
-      <div style="position:relative">${rows}</div>
+    <div data-tlpanel style="max-height:340px;overflow-y:auto;overscroll-behavior:contain">
+      <div style="position:relative">
+        <div aria-hidden="true" style="position:absolute;left:67.9px;top:8px;bottom:8px;width:2.2px;background:#b7b0a0;border-radius:2px"></div>
+        ${rows}
+      </div>
     </div>
     <p style="margin:7px 0 0;text-align:center;font:600 10.5px 'Hanken Grotesk';color:#76736a">Les ères du Japon et leurs repères — le terminus rouge, c'est cette fiche.</p>
   </div>`;
