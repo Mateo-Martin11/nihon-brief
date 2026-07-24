@@ -205,7 +205,8 @@ const CATS = [
   ['Nature','動','#33691E'],['Maison','家','#6D4C41'],['Travail','働','#263238'],
   ['École','学','#827717'],['Amour','恋','#E91E63'],['Argent','金','#B8860B'],
   ['Automobile','車','#3949AB'],
-  ['Langue','文','#00558C']
+  ['Langue','文','#00558C'],
+  ['Politique','政','#0D47A1'],['Esprit','心','#4B6455']
 ];
 
 /* ---------------------------------------------------------------- fiches */
@@ -533,7 +534,29 @@ const DATA = [
   {id:321,day:3,cat:'Plat',jp:'出汁',romaji:'dashi',body:'Le bouillon de base de presque tout : algue kombu et copeaux de bonite séchée. C’est lui qui porte l’umami, la « cinquième saveur » identifiée par le chimiste Ikeda en 1908.'},
   {id:322,day:3,cat:'Plat',jp:'海苔',romaji:'nori',body:'L’algue grillée en fines feuilles croustillantes, autour des onigiri et des maki. Se ramollit vite : les onigiri de konbini l’emballent séparément, d’où leur pliage malin.'},
   {id:323,day:3,cat:'Plat',jp:'餅',romaji:'mochi',body:'Riz gluant pilé en pâte élastique, incontournable du Nouvel An. À mâcher prudemment : sa texture étouffe des convives chaque année — les pompiers publient même des consignes.'},
-  {id:324,day:3,cat:'Plat',jp:'弁当',romaji:'bentō',body:'Le repas compartimenté à emporter : écoliers, salarymen, voyageurs (ekiben). Il se mange froid, et c’est voulu — la cuisine japonaise est pensée pour rester bonne refroidie.'}
+  {id:324,day:3,cat:'Plat',jp:'弁当',romaji:'bentō',body:'Le repas compartimenté à emporter : écoliers, salarymen, voyageurs (ekiben). Il se mange froid, et c’est voulu — la cuisine japonaise est pensée pour rester bonne refroidie.'},
+  {id:325,day:3,cat:'Politique',title:'Qui gouverne, au juste ?',body:'Monarchie constitutionnelle et parlementaire : l’empereur est un symbole sans aucun pouvoir, le pays est dirigé par le Premier ministre et la Diète. Le vrai jeu politique se joue à l’intérieur des partis.'},
+  {id:326,day:3,cat:'Politique',jp:'国会',romaji:'kokkai',body:'La Diète : le Parlement japonais, le plus ancien d’Asie (1890). Deux chambres — les Représentants (465 sièges, dissoute souvent) et les Conseillers. C’est elle qui fait et défait les Premiers ministres.'},
+  {id:327,day:3,cat:'Politique',title:'Le Premier ministre n’est pas élu par le peuple',body:'Il est désigné par la Diète : le parti majoritaire choisit donc le chef du gouvernement en interne. D’où ces Premiers ministres qui tombent parfois en un an, sans que le pays vote.'},
+  {id:328,day:3,cat:'Politique',title:'Le PLD règne depuis 1955',body:'Le Parti libéral-démocrate gouverne quasi sans interruption depuis sa création — le « système de 55 ». Une démocratie réelle, mais à parti ultra-dominant : l’alternance y est l’exception.'},
+  {id:329,day:3,cat:'Politique',title:'Takaichi Sanae, première femme au pouvoir',body:'Arrivée fin 2025 à la tête du PLD, elle est la première femme Première ministre du Japon — confirmée par les urnes en février 2026, en coalition avec les réformateurs d’Ishin. Tu visites le pays sous son gouvernement.'},
+  {id:330,day:3,cat:'Politique',title:'Les dynasties politiques',body:'Une grosse part des élus du PLD sont des « députés héritiers » (seshū giin) : ils reprennent la circonscription d’un père ou d’un grand-père. Abe, Koizumi, Kishida — la politique se transmet comme une maison de famille.'},
+  {id:331,day:3,cat:'Politique',title:'L’assassinat d’Abe Shinzō',body:'Premier ministre le plus longévif de l’histoire du pays, père des « Abenomics », il a été assassiné en plein meeting en 2022 — un choc immense dans un pays quasiment sans armes à feu.'},
+  {id:332,day:3,cat:'Politique',title:'L’article 9, la constitution pacifiste',body:'Le Japon « renonce à jamais à la guerre » depuis 1947. Il entretient pourtant des « Forces d’autodéfense » parmi les mieux équipées du monde — le grand débat constitutionnel permanent.'},
+  {id:333,day:3,cat:'Politique',title:'On vote en écrivant un nom',body:'Pas de case à cocher : l’électeur écrit lui-même, au crayon, le nom du candidat sur le bulletin. Et l’abstention des jeunes est massive — l’électorat qui pèse a les cheveux gris.'},
+  {id:334,day:3,cat:'Politique',title:'Les partis d’en face',body:'Kōmeitō, adossé au mouvement bouddhiste Sōka Gakkai ; les constitutionnels-démocrates au centre-gauche ; Ishin, les réformateurs venus d’Osaka ; et un Parti communiste centenaire, parfaitement légal.'},
+  {id:335,day:3,cat:'Esprit',jp:'本音と建前',romaji:'honne to tatemae',body:'Ce qu’on pense vraiment (honne) et la façade qu’on montre (tatemae). Ce n’est pas de l’hypocrisie : c’est un lubrifiant social assumé — le « oui » poli qui veut dire non en fait partie.'},
+  {id:336,day:3,cat:'Esprit',jp:'和',romaji:'wa',body:'L’harmonie du groupe, qui prime sur l’individu. C’est le socle de presque tout le reste : le consensus, le silence, l’horreur du conflit ouvert. Le premier nom du Japon lui-même était Wa.'},
+  {id:337,day:3,cat:'Esprit',jp:'内と外',romaji:'uchi to soto',body:'Le dedans et le dehors : famille, entreprise, pays forment des cercles dont on est — ou pas. La langue change selon le côté de la frontière où se trouve l’interlocuteur, les cadeaux aussi.'},
+  {id:338,day:3,cat:'Esprit',jp:'迷惑',romaji:'meiwaku',body:'Déranger autrui — la hantise nationale. Le silence des trains, les appels interdits, les écouteurs omniprésents : tout découle de cette règle simple, ne jamais imposer sa présence aux autres.'},
+  {id:339,day:3,cat:'Esprit',jp:'我慢',romaji:'gaman',body:'Endurer sans se plaindre, vertu cardinale. C’est le calme des files d’attente après les séismes qui stupéfie les médias étrangers — souffrir dignement plutôt que peser sur le groupe.'},
+  {id:340,day:3,cat:'Esprit',jp:'義理',romaji:'giri',body:'La dette sociale : toute faveur, tout cadeau appelle un retour. C’est le moteur des omiyage rapportés de voyage et du White Day — la comptabilité invisible des obligations réciproques.'},
+  {id:341,day:3,cat:'Esprit',jp:'仕方がない',romaji:'shōganai',body:'« On n’y peut rien. » L’acceptation de ce qui échappe — typhon, retard, séisme — sans colère inutile. Une résignation qui est aussi une forme d’élégance collective.'},
+  {id:342,day:3,cat:'Esprit',jp:'おもてなし',romaji:'omotenashi',body:'L’hospitalité qui anticipe les besoins avant qu’ils soient exprimés, sans rien attendre en retour. Le service impeccable sans pourboire vient de là — servir n’est pas servile.'},
+  {id:343,day:3,cat:'Esprit',jp:'もったいない',romaji:'mottainai',body:'Le gâchis comme faute quasi morale : jeter ce qui a encore de la valeur — objet, nourriture, talent. Le mot a été repris tel quel par la militante Wangari Maathai comme slogan écologique mondial.'},
+  {id:344,day:3,cat:'Esprit',jp:'型',romaji:'kata',body:'La forme juste : on apprend en répétant le geste codifié du maître — arts martiaux, sushi, calligraphie, service. La liberté vient après des années de forme, jamais avant.'},
+  {id:345,day:3,cat:'Esprit',jp:'間',romaji:'ma',body:'L’art de l’intervalle : le silence dans la conversation, le vide dans le jardin, la pause dans la musique. Ce qui n’est pas là compte autant que ce qui est là.'},
+  {id:346,day:3,cat:'Esprit',jp:'頑張る',romaji:'ganbaru',body:'Donner tout, tenir bon — l’effort comme valeur suprême, souvent plus que le résultat. « Ganbatte ! » est l’encouragement universel : tu l’entendras au sport, au travail, partout.'}
 ];
 
 /* ------------------------------------------------------------------ état */
@@ -1812,6 +1835,28 @@ const DIF = {
   322: 2,
   323: 2,
   324: 3,
+  325: 1,
+  326: 1,
+  327: 1,
+  328: 1,
+  329: 2,
+  330: 2,
+  331: 2,
+  332: 2,
+  333: 3,
+  334: 4,
+  335: 1,
+  336: 1,
+  337: 1,
+  338: 1,
+  339: 1,
+  340: 2,
+  341: 2,
+  342: 2,
+  343: 3,
+  344: 3,
+  345: 4,
+  346: 4,
 };
 
 /* Questions rédigées à la main, une par fiche — les 3 leurres portent sur le
@@ -2142,6 +2187,28 @@ const QZ = {
   322: {q:'Qu’est-ce que le nori (海苔) ?', a:'Une algue grillée en feuilles, autour des onigiri et des maki', x:['Une fine crêpe de riz séchée','Une feuille de bambou comestible','Une peau de soja séchée']},
   323: {q:'Pourquoi le mochi (餅) fait-il des victimes chaque Nouvel An ?', a:'Sa pâte de riz élastique peut étouffer — on le mâche prudemment', x:['Il se mange brûlant, à peine sorti du feu','Sa farce cache un noyau dur','Il fermente et devient très alcoolisé']},
   324: {q:'Comment se mange traditionnellement un bentō (弁当) ?', a:'Froid — la cuisine japonaise est pensée pour rester bonne refroidie', x:['Réchauffé à la vapeur, obligatoirement','Trempé dans un bouillon chaud','Grillé sur un réchaud de table']},
+325: {q:'Qui gouverne le Japon au quotidien ?', a:'Le Premier ministre et la Diète — l’empereur n’a aucun pouvoir', x:['L’empereur, conseillé par le gouvernement','Un conseil mixte de la cour et des élus','Les gouverneurs des 47 préfectures réunis']},
+  326: {q:'Qu’est-ce que la Diète (国会, kokkai) ?', a:'Le Parlement japonais à deux chambres — le plus ancien d’Asie (1890)', x:['Le conseil privé de l’empereur','La cour suprême du pays','L’assemblée des maires des grandes villes']},
+  327: {q:'Comment le Premier ministre japonais est-il choisi ?', a:'Il est élu par la Diète, pas par le peuple', x:['Au suffrage universel direct','Nommé librement par l’empereur','Par référendum national']},
+  328: {q:'Depuis quand le PLD domine-t-il la vie politique ?', a:'Depuis 1955, quasi sans interruption', x:['Depuis la capitulation de 1945','Depuis les années 80 seulement','Depuis la crise financière de 2008']},
+  329: {q:'Qu’a de particulier Takaichi Sanae, à la tête du gouvernement ?', a:'C’est la première femme Première ministre du Japon', x:['C’est la plus jeune cheffe de gouvernement du pays','C’est la première élue hors PLD depuis 1955','C’est une ancienne gouverneure de Tokyo']},
+  330: {q:'Qu’est-ce qu’un « député héritier » (seshū giin) ?', a:'Un élu qui reprend la circonscription de sa famille — courant au PLD', x:['Un député nommé par l’empereur','Un élu désigné par son prédécesseur battu','Un siège réservé aux anciennes familles nobles']},
+  331: {q:'Qu’est-il arrivé à Abe Shinzō, Premier ministre le plus longévif ?', a:'Il a été assassiné en 2022, en plein meeting électoral', x:['Il est mort en fonction d’une longue maladie','Il s’est retiré et vit à Kyoto','Il a été condamné pour corruption']},
+  332: {q:'Que dit l’article 9 de la constitution ?', a:'Le Japon renonce à la guerre — d’où des « Forces d’autodéfense »', x:['Il interdit toute alliance militaire','Il impose un référendum avant tout budget militaire','Il réserve l’armée à la protection de l’empereur']},
+  333: {q:'Comment vote-t-on au Japon ?', a:'En écrivant soi-même le nom du candidat sur le bulletin', x:['En cochant une case pré-imprimée','Par machine électronique depuis 2005','En apposant son hanko sur le bulletin']},
+  334: {q:'Sur quel mouvement s’appuie le parti Kōmeitō ?', a:'Le mouvement bouddhiste Sōka Gakkai', x:['Les syndicats agricoles','Les grandes entreprises exportatrices','Les sanctuaires shintō']},
+  335: {q:'Que désigne le duo honne / tatemae (本音と建前) ?', a:'Ce qu’on pense vraiment / la façade sociale qu’on montre', x:['La langue polie / la langue familière','Le nom public / le nom privé','La vie au bureau / la vie à la maison']},
+  336: {q:'Qu’est-ce que le wa (和) ?', a:'L’harmonie du groupe, qui prime sur l’individu', x:['Le respect dû aux anciens','La pureté rituelle du corps','Le devoir de rendre les faveurs']},
+  337: {q:'Que distingue uchi / soto (内と外) ?', a:'Le cercle des proches et tout ce qui lui est extérieur', x:['La ville et la campagne','Le sacré et le profane','Le jour et la nuit rituels']},
+  338: {q:'Qu’est-ce que la hantise du meiwaku (迷惑) ?', a:'La peur de déranger autrui — d’où le silence dans les trains', x:['La peur de perdre la face en public','La crainte d’attirer les mauvais esprits','L’angoisse d’arriver en retard']},
+  339: {q:'Que valorise le gaman (我慢) ?', a:'Endurer l’épreuve sans se plaindre', x:['Travailler plus dur que les autres','Pardonner publiquement les offenses','Épargner pour les siens']},
+  340: {q:'Qu’est-ce que le giri (義理) ?', a:'La dette sociale : toute faveur ou cadeau appelle un retour', x:['Le devoir de venger son clan','L’obéissance absolue au patron','La fidélité au quartier natal']},
+  341: {q:'Que veut dire shōganai (仕方がない) ?', a:'« On n’y peut rien » — accepter ce qui échappe', x:['« Ça va s’arranger » — l’optimisme','« C’est ta faute » — le reproche','« Encore un effort » — l’encouragement']},
+  342: {q:'Qu’est-ce que l’omotenashi (おもてなし) ?', a:'L’hospitalité qui anticipe les besoins, sans rien attendre en retour', x:['Le service premium réservé aux habitués','L’échange codifié de cadeaux entre hôtes','La politesse due aux étrangers de passage']},
+  343: {q:'Que condamne le mottainai (もったいない) ?', a:'Le gâchis — jeter ce qui a encore de la valeur', x:['L’avarice — refuser de partager','L’ostentation — étaler sa richesse','L’impatience — tout vouloir tout de suite']},
+  344: {q:'Qu’est-ce que le kata (型) ?', a:'La forme juste d’un geste, apprise par répétition', x:['Le grade dans les arts martiaux','Le duel codifié entre maîtres','L’improvisation maîtrisée']},
+  345: {q:'Qu’est-ce que le ma (間) ?', a:'L’art de l’intervalle : le vide et le silence comme matière', x:['Le rythme effréné du kabuki','La symétrie parfaite des jardins','Le point d’équilibre du corps']},
+  346: {q:'Que crie-t-on pour encourager quelqu’un ?', a:'« Ganbatte ! » — courage, donne tout', x:['« Banzai ! » — hourra','« Kanpai ! » — santé','« Yatta ! » — ça y est']},
 };
 
 /* =========================================================================
@@ -2306,7 +2373,7 @@ const PROGS = [
    desc:'L’utile sur place, zéro gaffe'},
   {key:'prog:table',   kanji:'味', label:'À table',       color:'#A03D12', cats:['Plat','Boisson','Étiquette'], difs:null, n:12, need:.8,
    desc:'Manger et boire sans fausse note'},
-  {key:'prog:culture', kanji:'雅', label:'Culture G',     color:'#4A3F7A', cats:['Histoire','Art','Religion','Cinéma','Manga & livres','Musique'], difs:null, n:12, need:.8,
+  {key:'prog:culture', kanji:'雅', label:'Culture G',     color:'#4A3F7A', cats:['Histoire','Art','Religion','Cinéma','Manga & livres','Musique','Politique','Esprit'], difs:null, n:12, need:.8,
    desc:'Pour briller au dîner'},
   {key:'prog:final',   kanji:'卒', label:'Examen final',  color:'#7A0E20', cats:null, difs:null, n:20, need:.9,
    desc:'Tout, tous niveaux — le boss'},
