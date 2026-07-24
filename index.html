@@ -64,7 +64,11 @@
   /* Les controles sont de vrais <button> : on neutralise le style natif sans
      toucher au comportement clavier ni a la semantique. */
   button{font:inherit;color:inherit;background:none;border:none;margin:0;
-         text-align:inherit;-webkit-appearance:none;appearance:none}
+         text-align:inherit;-webkit-appearance:none;appearance:none;touch-action:manipulation}
+
+  /* iOS : pas de flash gris au tap — le feedback est deja assure par
+     button:active (opacity .72), comme le veut la HIG (reponse immediate). */
+  html{-webkit-tap-highlight-color:transparent}
 
   /* Anneau de focus visible au clavier uniquement — jamais supprime sans
      remplacement (regle 28 : "Remove focus outline without replacement"). */
@@ -145,7 +149,7 @@
   [data-bkshade]{transition:opacity 1.1s cubic-bezier(.72,0,.2,1) .45s}
   .bk-cover3d.open ~ [data-bkshade]{opacity:0}
   .vtx{writing-mode:vertical-rl}
-  .kbd-hint{text-align:center;padding:0 0 12px;font:600 10.5px 'Hanken Grotesk';letter-spacing:.12em;color:#8f8a7e}
+  .kbd-hint{text-align:center;padding:0 0 12px;font:600 11px 'Hanken Grotesk';letter-spacing:.12em;color:#6d675c}
   @media (hover:none){.kbd-hint{display:none}}
 
   /* --- desktop : la revision s'agrandit, le carnet passe en double page.
@@ -556,7 +560,81 @@ const DATA = [
   {id:343,day:3,cat:'Mentalité',jp:'もったいない',romaji:'mottainai',body:'Le gâchis comme faute quasi morale : jeter ce qui a encore de la valeur — objet, nourriture, talent. Le mot a été repris tel quel par la militante Wangari Maathai comme slogan écologique mondial.'},
   {id:344,day:3,cat:'Mentalité',jp:'型',romaji:'kata',body:'La forme juste : on apprend en répétant le geste codifié du maître — arts martiaux, sushi, calligraphie, service. La liberté vient après des années de forme, jamais avant.'},
   {id:345,day:3,cat:'Mentalité',jp:'間',romaji:'ma',body:'L’art de l’intervalle : le silence dans la conversation, le vide dans le jardin, la pause dans la musique. Ce qui n’est pas là compte autant que ce qui est là.'},
-  {id:346,day:3,cat:'Mentalité',jp:'頑張る',romaji:'ganbaru',body:'Donner tout, tenir bon — l’effort comme valeur suprême, souvent plus que le résultat. « Ganbatte ! » est l’encouragement universel : tu l’entendras au sport, au travail, partout.'}
+  {id:346,day:3,cat:'Mentalité',jp:'頑張る',romaji:'ganbaru',body:'Donner tout, tenir bon — l’effort comme valeur suprême, souvent plus que le résultat. « Ganbatte ! » est l’encouragement universel : tu l’entendras au sport, au travail, partout.'},
+  {id:347,day:4,cat:'Anecdote',title:'Les plaques d’égout de collection',body:'Chaque municipalité dessine ses propres couvercles : poissons, châteaux, feux d’artifice, parfois peints en couleur. Depuis 2016, des « manhole cards » sont distribuées gratuitement aux visiteurs venus photographier la plaque locale.'},
+  {id:348,geo:[34.27,135.31],place:'Gare de Kishi, Wakayama',day:4,cat:'Anecdote',title:'Tama, la chatte cheffe de gare',body:'Nommée en 2007 à la gare de Kishi, sur une ligne menacée de fermeture, elle a attiré assez de touristes pour la sauver. Elle a eu un uniforme, un bureau — et des funérailles shintō en 2015.'},
+  {id:349,geo:[35.17,136.91],place:'Nagoya',day:4,cat:'Actu',title:'Les Jeux asiatiques arrivent à Nagoya',body:'Du 19 septembre au 4 octobre 2026, à Nagoya et dans la préfecture d’Aichi. Trop tard pour ton séjour, mais les infrastructures et la communication sont déjà partout.'},
+  {id:350,day:4,cat:'Actu',title:'Record absolu de fréquentation',body:'Le Japon a accueilli 42,7 millions de visiteurs en 2025, en hausse de 15,8 % sur un an. Concrètement : réserve tes restaurants et tes trains — en août, l’improvisation coûte cher.'},
+  {id:351,day:4,cat:'Plat',jp:'そば',romaji:'soba',body:'Nouilles de sarrasin, servies froides sur une claie (zaru) avec une sauce à tremper, ou chaudes en bouillon. Nagano en a fait sa spécialité — et on boit l’eau de cuisson (sobayu) à la fin.'},
+  {id:352,day:4,cat:'Plat',jp:'カレーライス',romaji:'karē raisu',body:'Le curry est arrivé par la marine britannique à l’ère Meiji, pas par l’Inde. Épais, doux, sucré, servi avec des pickles rouges : un plat de cantine et de réconfort, pas un plat exotique.'},
+  {id:353,day:4,cat:'Vocabulaire',jp:'予約しています',romaji:'yoyaku shite imasu',fr:'J’ai une réservation',body:'La phrase d’entrée dans tout restaurant ou hôtel réservé en ligne.'},
+  {id:354,day:4,cat:'Vocabulaire',jp:'辛いですか',romaji:'karai desu ka',fr:'C’est épicé ?',body:'Selon les régions, karai peut aussi vouloir dire « salé » — le contexte tranche.'},
+  {id:355,day:4,cat:'Histoire',title:'Les invasions mongoles repoussées deux fois',body:'En 1274 puis 1281, les flottes de Kubilai Khan sont détruites par des typhons, baptisés kamikaze — « vent divin ». Le mot sera recyclé bien plus tard, en 1944.'},
+  {id:356,day:4,cat:'Histoire',title:'Les navires noirs de Perry, 1853',body:'Le commodore américain force l’ouverture des ports avec quatre navires, dont deux à vapeur — un choc technologique et diplomatique qui déclenche la chute du shogunat quinze ans plus tard.'},
+  {id:357,geo:[31.58,130.66],place:'Sakurajima, Kagoshima',day:4,cat:'Géographie',title:'111 volcans actifs',body:'Environ 7 % des volcans actifs de la planète sur 0,25 % des terres émergées. Certains, comme le Sakurajima à Kagoshima, crachent des cendres presque quotidiennement sur une ville habitée.'},
+  {id:358,day:4,cat:'Géographie',title:'La plus grande mégalopole du monde',body:'L’agglomération du Grand Tokyo compte environ 37 millions d’habitants — record mondial. Un tiers du pays vit dans le corridor Tokyo-Nagoya-Osaka.'},
+  {id:359,geo:[35.57,138.93],place:'Voie d’essai, Yamanashi',day:4,cat:'Technologie',title:'Le maglev à 603 km/h',body:'Le train à sustentation magnétique L0 a battu le record mondial sur rail en 2015, sur la voie d’essai de Yamanashi. La ligne Chūō Shinkansen doit relier Tokyo à Nagoya — mais le chantier accumule les retards.'},
+  {id:360,day:4,cat:'Technologie',title:'Le fax n’est jamais mort',body:'Administrations, cliniques et petites entreprises fonctionnent encore au télécopieur, adossé à la culture du document papier et du cachet. Les campagnes de numérisation butent dessus depuis vingt ans.'},
+  {id:361,day:4,cat:'Science',title:'Le nihonium, élément 113',body:'Synthétisé par l’équipe RIKEN de Kōsuke Morita, officiellement nommé en 2016 : le premier élément du tableau périodique baptisé par des chercheurs asiatiques. Trois atomes obtenus en une décennie d’essais.'},
+  {id:362,day:4,cat:'Science',title:'Le télescope Subaru',body:'Installé au sommet du Mauna Kea, à Hawaï, il possède l’un des plus grands miroirs monolithiques du monde (8,2 m). Son nom est le mot japonais pour l’amas des Pléiades — celui du logo de la marque auto.'},
+  {id:363,day:4,cat:'Socio-éco',jp:'孤独死',romaji:'kodokushi',body:'Les « morts solitaires », découvertes des semaines après le décès, sont devenues assez fréquentes pour créer un métier : des sociétés spécialisées dans le nettoyage et le vidage de ces logements.'},
+  {id:364,day:4,cat:'Socio-éco',title:'Une dette énorme, mais domestique',body:'Le ratio dette/PIB est parmi les plus élevés du monde développé, mais la dette est détenue en écrasante majorité par des créanciers japonais et la banque centrale. C’est ce qui la rend soutenable là où elle briserait un autre pays.'},
+  {id:365,day:4,cat:'Sport',jp:'ちゃんこ鍋',romaji:'chanko-nabe',body:'Le ragoût des lutteurs de sumo, mangé en énormes quantités après un entraînement à jeun pour maximiser la prise de masse. D’anciens rikishi ouvrent des restaurants de chanko à la retraite.'},
+  {id:366,day:4,cat:'Sport',title:'La J.League a tout changé en 1993',body:'Le football professionnel s’est structuré avec des clubs ancrés dans leur ville plutôt que dans une entreprise, contrairement au baseball. En trente ans, le Japon est devenu exportateur régulier de joueurs vers l’Europe.'},
+  {id:367,day:4,cat:'Musique',jp:'演歌',romaji:'enka',body:'Ballades mélodramatiques à trémolos sur l’amour perdu, la mer et l’alcool, associées aux générations âgées. C’est la variété nationale — omniprésente au karaoké et dans les émissions du soir.'},
+  {id:368,day:4,cat:'Musique',title:'Hatsune Miku, pop star virtuelle',body:'Logiciel de synthèse vocale sorti en 2007 chez Crypton, devenu une idole qui remplit des salles en hologramme. Son répertoire est écrit par des milliers d’amateurs — pas par une maison de disques.'},
+  {id:369,day:4,cat:'Cinéma',title:'Rashōmon ouvre le Japon au monde',body:'Lion d’or à Venise en 1951 : le film d’Akira Kurosawa révèle le cinéma japonais à l’Occident. L’« effet Rashōmon » — plusieurs versions incompatibles d’un même fait — est entré dans le vocabulaire courant.'},
+  {id:370,day:4,cat:'Cinéma',title:'Kore-eda, Palme d’or 2018',body:'Une affaire de famille couronne un cinéma social sur les familles recomposées, la pauvreté invisible et les liens choisis. Le contrepoint réaliste au Japon fantasmé de l’animation.'},
+  {id:371,day:4,cat:'Étiquette',jp:'お土産',romaji:'omiyage',body:'En rentrant de voyage, on rapporte des gâteaux régionaux à ses collègues et sa famille, en boîtes individuelles faites pour être partagées. Les gares y consacrent des rayons entiers — c’est un devoir social, pas une option.'},
+  {id:372,day:4,cat:'Étiquette',title:'Le côté de l’escalator change de ville',body:'À Tokyo, on se tient à gauche et on double à droite ; à Osaka, c’est l’inverse. Se tromper n’a rien de dramatique — tu seras juste le seul à contre-courant.'},
+  {id:373,day:4,cat:'Jeu vidéo',title:'Pokémon est né d’une collection d’insectes',body:'Satoshi Tajiri chassait les scarabées enfant et voulait retrouver cette sensation de capture et d’échange. Le câble link du Game Boy est le cœur du concept — pas un accessoire.'},
+  {id:374,day:4,cat:'Jeu vidéo',title:'La Famicom, 1983',body:'Sortie deux ans avant sa version occidentale rebaptisée NES, elle a sauvé le secteur après le krach du jeu vidéo américain. Sa croix directionnelle a fixé la norme des manettes pour quarante ans.'},
+  {id:375,day:4,cat:'Boisson',jp:'梅酒',romaji:'umeshu',body:'Liqueur de prunes vertes macérées dans l’alcool et le sucre, souvent faite maison. Douce, acidulée, sur glace ou allongée de soda — l’entrée facile dans les alcools japonais.'},
+  {id:376,day:4,cat:'Boisson',title:'Le café en canette',body:'Chaud ou froid selon la saison, dans chaque distributeur, avec des marques comme BOSS ou Georgia. Repère les liserés : rouge pour les boissons chaudes, bleu pour les froides.'},
+  {id:377,geo:[35.54,134.23],place:'Dunes de Tottori',day:4,cat:'Lieu',title:'Les dunes de Tottori',body:'Un désert de sable de 16 km le long de la mer du Japon — chameaux et parapente compris. Juste à côté, un musée entièrement consacré aux sculptures de sable, renouvelé chaque année.'},
+  {id:378,geo:[34.25,133.08],place:'Shimanami Kaidō',day:4,cat:'Lieu',title:'Le Shimanami Kaidō',body:'70 km de piste cyclable reliant Honshū à Shikoku en sautant d’île en île par des ponts suspendus. Vélos louables à un point et rendus à un autre : l’un des plus beaux itinéraires cyclables du monde.'},
+  {id:379,day:4,cat:'Transport',title:'Les voitures réservées aux femmes',body:'Signalées en rose sur le quai, actives surtout aux heures de pointe, en réponse aux agressions dans les rames bondées. Les horaires d’application sont affichés au sol — lis-les avant de monter.'},
+  {id:380,day:4,cat:'Transport',jp:'押し屋',romaji:'oshiya',body:'Les « pousseurs » : employés gantés de blanc qui compriment les voyageurs pour permettre la fermeture des portes. Le métier existe toujours sur les lignes les plus saturées de Tokyo, le matin.'},
+  {id:381,day:4,cat:'Kanji',jp:'女 · 男',romaji:'onna · otoko',meta:'Femme · Homme',body:'Les deux caractères à repérer d’urgence devant les toilettes publiques — souvent sans pictogramme ni couleur pour aider.'},
+  {id:382,day:4,cat:'Kanji',jp:'開 · 閉',romaji:'kai · hei',meta:'Ouvrir · Fermer',body:'Les deux boutons de l’ascenseur — et de certaines portes de train à commande manuelle en hiver. 開 ouvre, 閉 ferme : les confondre se paie en regards.'},
+  {id:383,day:4,cat:'Insolite',title:'Des funérailles bouddhistes pour chiens robots',body:'Quand Sony a cessé la maintenance des Aibo, des temples ont organisé des cérémonies pour les unités irréparables, avant de les démonter pour pièces. Les moines y voient une âme dans l’objet — cohérent avec l’animisme local.'},
+  {id:384,day:4,cat:'Insolite',title:'L’hôtel capsule a été conçu par un architecte',body:'Kishō Kurokawa, figure du mouvement métaboliste, a livré le premier en 1979 à Osaka. C’est une idée d’urbanisme modulaire avant d’être un hébergement bon marché.'},
+  {id:385,day:4,cat:'Yōkai',jp:'天狗',romaji:'tengu',body:'Créature de montagne au long nez rouge, mi-corbeau mi-homme, redoutable maître d’armes : les moines-guerriers légendaires auraient appris leur escrime auprès d’eux. Son masque est un classique des festivals.'},
+  {id:386,day:4,cat:'Yōkai',jp:'座敷童子',romaji:'zashiki-warashi',body:'Esprit d’enfant qui habite une maison et lui apporte la prospérité. S’il s’en va, la famille décline — un yōkai qu’on souhaite garder, pas chasser.'},
+  {id:387,day:4,cat:'Religion',jp:'御朱印',romaji:'goshuin',body:'Sceau calligraphié à l’encre et au tampon rouge, apposé à la main dans un carnet dédié (goshuinchō) contre quelques centaines de yens. C’est une preuve de visite, pas un souvenir — pas de carnet ordinaire.'},
+  {id:388,day:4,cat:'Religion',jp:'注連縄',romaji:'shimenawa',body:'Grosse corde de paille tressée, ornée de papiers pliés en zigzag, qui délimite un espace ou un objet sacré. Un arbre ou un rocher ceint d’un shimenawa abrite un kami.'},
+  {id:389,day:4,cat:'Manga & livres',title:'Bashō et le haïku de voyage',body:'La Sente étroite du Bout-du-Monde (1689) raconte son périple à pied dans le nord du Japon, en prose entrecoupée de haïkus. Le modèle du récit de voyage contemplatif — encore refait par des marcheurs aujourd’hui.'},
+  {id:390,day:4,cat:'Manga & livres',title:'Le Groupe de l’an 24',body:'Des autrices nées autour de 1949 — Moto Hagio, Keiko Takemiya — ont fait du manga pour filles un espace de science-fiction, de psychologie et de sexualité. Elles ont posé les bases de tout le shōjo moderne.'},
+  {id:391,day:4,cat:'Sorties',title:'Les maid cafés d’Akihabara',body:'Serveuses en costume qui traitent le client en « maître », dessinent au ketchup et facturent l’ambiance. Photos strictement encadrées et payantes : lis la grille tarifaire avant de t’asseoir.'},
+  {id:392,geo:[35.63,134.81],place:'Kinosaki Onsen',day:4,cat:'Sorties',title:'Le yukata dans les villes thermales',body:'À Kinosaki ou Kusatsu, on se promène en yukata et geta d’un bain public à l’autre — le claquement des socques sur les pavés fait partie du décor. L’auberge fournit la tenue.'},
+  {id:393,day:4,cat:'Saisons',title:'La Golden Week',body:'Quatre jours fériés agglutinés fin avril-début mai : la plus grosse migration intérieure de l’année. Trains pleins, prix qui doublent — la pire semaine pour visiter le pays.'},
+  {id:394,day:4,cat:'Saisons',jp:'おせち',romaji:'osechi',body:'Les boîtes laquées compartimentées du Nouvel An, préparées à l’avance pour ne pas cuisiner les trois premiers jours de janvier. Chaque aliment porte un jeu de mots porte-bonheur — les crevettes courbées évoquent la vieillesse à atteindre.'},
+  {id:395,day:4,cat:'Mode',title:'Kimono et yukata, pas la même chose',body:'Le yukata est en coton non doublé, porté à même la peau l’été et aux bains ; le kimono est doublé, en soie, avec sous-vêtements et obi complexe. Pan gauche par-dessus le droit — l’inverse est réservé aux morts.'},
+  {id:396,day:4,cat:'Mode',title:'Les gants blancs des chauffeurs',body:'Taxis, bus et chauffeurs privés portent gants blancs, chemise et casquette. L’uniforme signale le professionnalisme du service — dans un pays où le métier n’est pas dévalorisé.'},
+  {id:397,day:4,cat:'Art',jp:'文楽',romaji:'bunraku',body:'Théâtre de marionnettes d’un mètre, manipulées à vue par trois personnes dont deux vêtues de noir, pendant qu’un récitant joue tous les rôles au shamisen. Classé à l’UNESCO — il a nourri le répertoire du kabuki.'},
+  {id:398,day:4,cat:'Art',jp:'和紙',romaji:'washi',body:'Papier fabriqué à la main à partir d’écorce de mûrier, souple et très résistant, inscrit à l’UNESCO en 2014. Il sert aux cloisons, aux restaurations de manuscrits — et aux musées du monde entier.'},
+  {id:399,day:4,cat:'Santé',jp:'花粉症',romaji:'kafunshō',body:'L’allergie nationale : des millions de personnes souffrent du pollen des cryptomères plantés massivement après-guerre pour la reconstruction. L’État finance désormais l’abattage et la replantation d’arbres à faible pollen.'},
+  {id:400,day:4,cat:'Santé',title:'Couverture maladie universelle depuis 1961',body:'Tout résident est affilié, avec un reste à charge classique de 30 % et un plafond mensuel qui protège des grosses dépenses. Une des raisons majeures de la longévité japonaise.'},
+  {id:401,day:4,cat:'Nature',title:'Les cerisiers sont des clones',body:'La variété dominante, le Somei-Yoshino, se reproduit par greffe : tous les arbres sont génétiquement identiques. C’est pourquoi ils fleurissent tous ensemble, en quelques jours, dans une même ville.'},
+  {id:402,geo:[43.09,144.43],place:'Marais de Kushiro, Hokkaidō',day:4,cat:'Nature',title:'Les grues du Japon de Kushiro',body:'Presque éteintes au début du XXe siècle, sauvées par une poignée de survivantes retrouvées dans les marais de Hokkaidō. Leur danse nuptiale sur la neige est l’image animalière la plus reproduite du pays.'},
+  {id:403,day:4,cat:'Maison',title:'Shōji et fusuma',body:'Le shōji est la cloison translucide en papier qui laisse passer la lumière ; le fusuma est opaque et sépare vraiment les pièces. Les deux coulissent : une maison japonaise se reconfigure au lieu de se cloisonner.'},
+  {id:404,day:4,cat:'Maison',title:'Le futon prend l’air',body:'On aère matelas et couettes au balcon dès qu’il fait beau, contre l’humidité et les acariens. Les façades couvertes de futons au soleil sont un marqueur visuel des quartiers résidentiels.'},
+  {id:405,day:4,cat:'Travail',jp:'就活',romaji:'shūkatsu',body:'La chasse à l’emploi des étudiants, ritualisée : costume noir identique pour tous, entretiens en série, recrutement synchronisé pour une entrée en poste en avril. Se distinguer visuellement est un handicap, pas un atout.'},
+  {id:406,day:4,cat:'Travail',title:'Les congés payés qu’on ne prend pas',body:'Le taux d’utilisation des congés reste faible : partir, c’est charger ses collègues. Une loi de 2019 oblige désormais les employeurs à imposer un minimum de jours pris.'},
+  {id:407,day:4,cat:'École',title:'La piscine de l’école',body:'Beaucoup d’établissements ont leur propre bassin extérieur et la natation est obligatoire — héritage d’une politique de prévention des noyades. Le pays a le plus fort taux d’écoles équipées au monde.'},
+  {id:408,day:4,cat:'École',jp:'運動会',romaji:'undōkai',body:'La fête sportive annuelle, préparée pendant des semaines : courses de relais, pyramides humaines, parents dans les tribunes. Un événement de quartier autant que scolaire.'},
+  {id:409,day:4,cat:'Amour',jp:'合コン',romaji:'gōkon',body:'Le rendez-vous de groupe : un ami de chaque côté réunit autant d’hommes que de femmes autour d’une table d’izakaya. Un format organisé pour créer des rencontres sans l’exposition d’un tête-à-tête.'},
+  {id:410,day:4,cat:'Amour',title:'Le mariage à la carte',body:'Cérémonie shintō, ou chapelle de style chrétien avec officiant de façade, sans être croyant : le rite se choisit pour l’esthétique et la photo, sans conflit théologique.'},
+  {id:411,day:4,cat:'Argent',title:'Deux taux de TVA',body:'10 % en général, 8 % pour l’alimentaire à emporter. Manger sur place dans le même konbini fait grimper le ticket — c’est la question qu’on te pose parfois en caisse.'},
+  {id:412,day:4,cat:'Argent',title:'La détaxe pour touristes',body:'Achats hors taxes au-delà d’un seuil dans les magasins signalés « Tax-Free », passeport obligatoire. Les consommables sont scellés — théoriquement à ne pas ouvrir avant la sortie du territoire.'},
+  {id:413,day:4,cat:'Automobile',jp:'車庫証明',romaji:'shako shōmei',body:'Pour immatriculer une voiture en zone urbaine, il faut prouver qu’on dispose d’une place de stationnement. C’est la raison directe de l’absence de voitures ventouses dans les rues.'},
+  {id:414,day:4,cat:'Automobile',title:'Le Toyota Production System',body:'Juste-à-temps, kaizen, et le droit de tout arrêter en tirant sur un cordon dès qu’on repère un défaut. Ce système d’usine est devenu la matrice mondiale du lean — jusque dans le logiciel.'},
+  {id:415,day:4,cat:'Langue',title:'Les onomatopées structurent la langue',body:'Au-delà des bruits, le japonais a des mots pour les états : pekopeko (mourir de faim), dokidoki (cœur qui bat), fuwafuwa (moelleux). On les emploie à l’oral en permanence — pas seulement dans les mangas.'},
+  {id:416,day:4,cat:'Langue',jp:'和製英語',romaji:'wasei-eigo',body:'Le faux anglais fabriqué localement : baikingu (buffet), sarariiman, konsento (prise électrique), manshon (immeuble). Connaître l’anglais peut te tromper autant que t’aider.'},
+  {id:417,day:4,cat:'Politique',title:'Okinawa porte les bases américaines',body:'La préfecture représente moins de 1 % du territoire mais accueille l’essentiel des emprises militaires américaines exclusives. Le sujet structure toute la vie politique locale depuis des décennies.'},
+  {id:418,day:4,cat:'Politique',title:'Le vote à 18 ans depuis 2016',body:'L’âge électoral est passé de 20 à 18 ans — première réforme du genre depuis 1945. La participation des jeunes reste pourtant nettement inférieure à celle des seniors, qui pèsent lourd dans les urnes.'},
+  {id:419,day:4,cat:'Mentalité',jp:'根回し',romaji:'nemawashi',body:'Littéralement « tourner autour des racines » avant de transplanter un arbre : on obtient l’accord de chacun en privé avant la réunion. La réunion n’est pas le lieu de la décision — elle en est la ratification.'},
+  {id:420,day:4,cat:'Mentalité',jp:'一期一会',romaji:'ichi-go ichi-e',body:'« Une fois, une rencontre » : ce moment précis ne se reproduira jamais, donc on l’honore. Né de la cérémonie du thé, souvent calligraphié — et adopté comme philosophie de voyage.'}
 ];
 
 /* ------------------------------------------------------------------ état */
@@ -746,7 +824,7 @@ function tplHybrid(it){
 function tplPlain(it){
   return `<div style="display:flex;align-items:center;gap:8px;background:${it.color};color:#fff;padding:7px 46px 7px 13px">
       <span aria-hidden="true" style="font:900 12px 'Noto Sans JP'">${esc(it.kanji)}</span>
-      <span style="font:800 10.5px 'Hanken Grotesk';letter-spacing:.16em;text-transform:uppercase">${esc(it.catName)}</span>
+      <span style="font:800 11px 'Hanken Grotesk';letter-spacing:.16em;text-transform:uppercase">${esc(it.catName)}</span>
     </div>
     <div style="flex:1;padding:12px 44px 14px 15px">
       <div style="font:700 15px/1.3 'Hanken Grotesk';color:#111;margin-bottom:5px">${esc(it.title)}</div>
@@ -784,7 +862,7 @@ function iaBtn(it){
   if (!IA_URL || (!navigator.onLine && !cached)) return '';
   const quoi = esc(it.jp || it.title);
   const open = state.iaOpen === it.id;
-  return `<button type="button" class="hit" data-ia="${it.id}" aria-expanded="${open}" aria-label="En savoir plus sur « ${quoi} » avec l'IA" style="cursor:pointer;font:800 10px 'Hanken Grotesk';letter-spacing:.18em;color:${open ? '#fff' : '#76736a'};background:${open ? '#141414' : 'transparent'};border:1px solid ${open ? '#141414' : '#d9d4c8'};border-radius:999px;padding:4px 12px;transition:background .15s,color .15s">IA</button>`;
+  return `<button type="button" class="hit" data-ia="${it.id}" aria-expanded="${open}" aria-label="En savoir plus sur « ${quoi} » avec l'IA" style="cursor:pointer;font:800 11px 'Hanken Grotesk';letter-spacing:.18em;color:${open ? '#fff' : '#76736a'};background:${open ? '#141414' : 'transparent'};border:1px solid ${open ? '#141414' : '#d9d4c8'};border-radius:999px;padding:4px 12px;transition:background .15s,color .15s">IA</button>`;
 }
 
 function iaPanel(it){
@@ -896,7 +974,7 @@ function render(){
     : `<div class="row-full" style="text-align:center;padding:52px 20px;color:#76736a">
          <div style="font:900 34px 'Noto Sans JP';color:#939089">行き止まり</div>
          <div style="font:600 13px 'Hanken Grotesk';margin-top:8px">Voie sans issue — aucune fiche ne correspond.</div>
-         <div id="reset" style="display:inline-block;margin-top:14px;cursor:pointer;font:700 13px 'Hanken Grotesk';color:#0064A6">Réinitialiser les filtres</div>
+         <button type="button" id="reset" class="hit" style="display:inline-block;margin-top:14px;cursor:pointer;font:700 13px 'Hanken Grotesk';color:#0064A6">Réinitialiser les filtres</button>
        </div>`;
 
   document.getElementById('shell').innerHTML = `
@@ -934,7 +1012,7 @@ function render(){
     </div>
     <button type="button" id="btn-quiz" class="hit" aria-label="Ouvrir le quiz — ${Object.keys(state.badges).length} sceau(x) sur ${CATS.length + 1}" style="flex:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;background:#1f1f1f;border-radius:10px;padding:6px 12px">
       <span style="font:900 13px 'Noto Sans JP';color:#ffb400">検定</span>
-      <span style="font:800 9px 'Hanken Grotesk';letter-spacing:.14em;color:#8f8a7e">QUIZ</span>
+      <span style="font:800 11px 'Hanken Grotesk';letter-spacing:.14em;color:#8f8a7e">QUIZ</span>
     </button>
     <button type="button" id="btn-review" class="hit" aria-label="Lancer le mode révision" style="flex:none;cursor:pointer;display:flex;align-items:center;gap:8px;background:#E60012;color:#fff;border-radius:10px;padding:9px 14px">
       <span style="font:900 14px 'Noto Sans JP'">復習</span>
@@ -1194,15 +1272,15 @@ function tplReview(){
         <button type="button" id="rv-again-btn" class="hit" aria-label="À revoir plus tard" style="width:54px;height:54px;border-radius:50%;cursor:pointer;background:#fff;display:grid;place-items:center">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#957100" stroke-width="2.4" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.3"/><path d="M3 2v5h5"/></svg>
         </button>
-        <span aria-hidden="true" style="font:700 9.5px 'Hanken Grotesk';letter-spacing:.14em;color:#a5a094">À REVOIR</span>
+        <span aria-hidden="true" style="font:700 11px 'Hanken Grotesk';letter-spacing:.14em;color:#a5a094">À REVOIR</span>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
         <button type="button" id="rv-reveal" class="hit" aria-label="Révéler la réponse" ${r.revealed ? 'disabled' : ''} style="height:54px;padding:0 24px;border-radius:27px;cursor:pointer;background:#2b2b2b;color:#fff;font:800 13px 'Hanken Grotesk';letter-spacing:.06em;${r.revealed ? 'opacity:.45;cursor:default' : ''}">${r.revealed ? 'RÉVÉLÉ' : 'RÉVÉLER'}</button>
-        <span aria-hidden="true" style="font:700 9.5px 'Hanken Grotesk';letter-spacing:.14em;color:#a5a094">LA RÉPONSE</span>
+        <span aria-hidden="true" style="font:700 11px 'Hanken Grotesk';letter-spacing:.14em;color:#a5a094">LA RÉPONSE</span>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
         <button type="button" id="rv-know" class="hit" aria-label="Je savais — tamponner" style="width:54px;height:54px;border-radius:50%;cursor:pointer;background:#E60012;color:#fff;font:900 20px 'Noto Sans JP';display:grid;place-items:center">済</button>
-        <span aria-hidden="true" style="font:700 9.5px 'Hanken Grotesk';letter-spacing:.14em;color:#a5a094">JE SAVAIS</span>
+        <span aria-hidden="true" style="font:700 11px 'Hanken Grotesk';letter-spacing:.14em;color:#a5a094">JE SAVAIS</span>
       </div>
     </div>
     <div class="kbd-hint">← À REVOIR · ESPACE RÉVÉLER · → JE SAVAIS · GLISSE LA CARTE</div>
@@ -1314,7 +1392,7 @@ function tplBkSummary(){
     const full = got === tot && tot > 0;
     return `<div style="display:flex;align-items:baseline;gap:6px;min-width:0">
       <span aria-hidden="true" style="flex:none;font:900 11px 'Noto Sans JP';color:${CAT_MAP[n].ink}">${esc(k)}</span>
-      <span style="flex:none;max-width:70px;font:600 9.5px 'Hanken Grotesk';letter-spacing:.04em;color:#3f3c35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(n)}</span>
+      <span style="flex:none;max-width:70px;font:600 11px 'Hanken Grotesk';letter-spacing:.04em;color:#3f3c35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(n)}</span>
       <span aria-hidden="true" style="flex:1;min-width:8px;border-bottom:1.5px dotted #c9c2b0;transform:translateY(-2px)"></span>
       <span class="tnum" style="flex:none;font:${full ? "800 10px 'Noto Sans JP'" : "700 10px 'Hanken Grotesk'"};color:${full ? '#C6002B' : '#76736a'}">${full ? '完' : got + ' / ' + tot}</span>
     </div>`;
@@ -1341,7 +1419,7 @@ function tplBkStamps(items){
         <div style="position:relative;width:62px;height:62px;margin:0 auto">
           ${frameSVG(d)}${got ? inkStampSVG(d) : ''}
         </div>
-        <div style="margin-top:7px;font:600 9px 'Hanken Grotesk','Noto Sans JP',sans-serif;letter-spacing:.03em;color:#76736a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px" title="${esc(caption)}">${esc(caption)}</div>
+        <div style="margin-top:7px;font:600 11px 'Hanken Grotesk','Noto Sans JP',sans-serif;letter-spacing:.03em;color:#76736a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px" title="${esc(caption)}">${esc(caption)}</div>
       </div>`;
     }).join('')}
   </div>`;
@@ -1498,7 +1576,7 @@ function jpMapSVG(it){
 function mapBtn(it){
   if (!it.geo) return '';
   const open = state.mapOpen === it.id;
-  return `<button type="button" class="hit" data-map="${it.id}" aria-expanded="${open}" aria-label="Situer « ${esc(it.place || it.title || it.jp)} » sur la carte" style="cursor:pointer;font:800 10px 'Hanken Grotesk';letter-spacing:.14em;color:${open ? '#fff' : '#76736a'};background:${open ? '#141414' : 'transparent'};border:1px solid ${open ? '#141414' : '#d9d4c8'};border-radius:999px;padding:4px 12px;transition:background .15s,color .15s"><span style="font:800 10px 'Noto Sans JP';letter-spacing:0">地図</span> CARTE</button>`;
+  return `<button type="button" class="hit" data-map="${it.id}" aria-expanded="${open}" aria-label="Situer « ${esc(it.place || it.title || it.jp)} » sur la carte" style="cursor:pointer;font:800 11px 'Hanken Grotesk';letter-spacing:.14em;color:${open ? '#fff' : '#76736a'};background:${open ? '#141414' : 'transparent'};border:1px solid ${open ? '#141414' : '#d9d4c8'};border-radius:999px;padding:4px 12px;transition:background .15s,color .15s"><span style="font:800 11px 'Noto Sans JP';letter-spacing:0">地図</span> CARTE</button>`;
 }
 
 function mapPanel(it){
@@ -1533,17 +1611,17 @@ const DIF = {
   20: 1,
   21: 1,
   22: 1,
-  23: 2,
+  23: 1,
   24: 2,
   25: 2,
   26: 1,
   27: 1,
   28: 1,
-  29: 2,
+  29: 1,
   30: 1,
   31: 2,
   32: 1,
-  33: 2,
+  33: 1,
   34: 1,
   35: 1,
   36: 4,
@@ -1552,7 +1630,7 @@ const DIF = {
   39: 1,
   40: 1,
   41: 1,
-  42: 2,
+  42: 1,
   43: 1,
   44: 1,
   45: 1,
@@ -1563,7 +1641,7 @@ const DIF = {
   50: 1,
   51: 1,
   52: 1,
-  53: 2,
+  53: 1,
   54: 1,
   55: 2,
   56: 1,
@@ -1579,7 +1657,7 @@ const DIF = {
   66: 1,
   67: 1,
   68: 1,
-  69: 2,
+  69: 1,
   70: 2,
   71: 1,
   72: 1,
@@ -1588,7 +1666,7 @@ const DIF = {
   75: 1,
   76: 1,
   77: 1,
-  78: 2,
+  78: 1,
   79: 1,
   80: 1,
   81: 1,
@@ -1638,15 +1716,15 @@ const DIF = {
   125: 1,
   126: 1,
   127: 1,
-  128: 2,
+  128: 1,
   129: 1,
   130: 3,
   131: 1,
   132: 2,
   133: 1,
-  134: 2,
+  134: 1,
   135: 2,
-  136: 2,
+  136: 1,
   137: 2,
   138: 1,
   139: 2,
@@ -1657,15 +1735,15 @@ const DIF = {
   144: 2,
   145: 3,
   146: 1,
-  147: 2,
+  147: 1,
   148: 1,
   149: 1,
   150: 1,
   151: 1,
-  152: 2,
+  152: 1,
   153: 2,
-  154: 2,
-  155: 2,
+  154: 1,
+  155: 1,
   156: 2,
   157: 2,
   158: 3,
@@ -1673,7 +1751,7 @@ const DIF = {
   160: 3,
   161: 1,
   162: 1,
-  163: 2,
+  163: 1,
   164: 1,
   165: 2,
   166: 3,
@@ -1685,7 +1763,7 @@ const DIF = {
   172: 2,
   173: 4,
   174: 4,
-  175: 2,
+  175: 1,
   176: 2,
   177: 2,
   178: 2,
@@ -1696,7 +1774,7 @@ const DIF = {
   183: 3,
   184: 1,
   185: 4,
-  186: 3,
+  186: 2,
   187: 4,
   188: 1,
   189: 2,
@@ -1707,12 +1785,12 @@ const DIF = {
   194: 1,
   195: 4,
   196: 2,
-  197: 3,
-  198: 2,
+  197: 4,
+  198: 3,
   199: 2,
   200: 2,
   201: 3,
-  202: 3,
+  202: 4,
   203: 4,
   204: 1,
   205: 1,
@@ -1744,13 +1822,13 @@ const DIF = {
   231: 3,
   232: 4,
   233: 4,
-  234: 3,
+  234: 2,
   235: 4,
   236: 2,
   237: 3,
   238: 1,
   239: 3,
-  240: 3,
+  240: 2,
   241: 4,
   242: 2,
   243: 2,
@@ -1785,15 +1863,15 @@ const DIF = {
   272: 4,
   273: 2,
   274: 2,
-  275: 3,
+  275: 2,
   276: 3,
   277: 4,
   278: 3,
   279: 2,
   280: 3,
-  281: 2,
+  281: 3,
   282: 1,
-  283: 3,
+  283: 2,
   284: 3,
   285: 4,
   286: 3,
@@ -1809,12 +1887,12 @@ const DIF = {
   296: 1,
   297: 1,
   298: 1,
-  299: 2,
+  299: 1,
   300: 2,
   301: 2,
   302: 2,
   303: 3,
-  304: 3,
+  304: 4,
   305: 4,
   306: 1,
   307: 1,
@@ -1839,11 +1917,11 @@ const DIF = {
   326: 1,
   327: 1,
   328: 1,
-  329: 2,
+  329: 1,
   330: 2,
   331: 2,
   332: 2,
-  333: 3,
+  333: 4,
   334: 4,
   335: 1,
   336: 1,
@@ -1857,6 +1935,80 @@ const DIF = {
   344: 3,
   345: 4,
   346: 4,
+  347: 1,
+  348: 2,
+  349: 2,
+  350: 1,
+  351: 2,
+  352: 2,
+  353: 2,
+  354: 2,
+  355: 3,
+  356: 3,
+  357: 2,
+  358: 2,
+  359: 3,
+  360: 2,
+  361: 2,
+  362: 3,
+  363: 3,
+  364: 4,
+  365: 2,
+  366: 3,
+  367: 2,
+  368: 2,
+  369: 2,
+  370: 2,
+  371: 1,
+  372: 2,
+  373: 2,
+  374: 2,
+  375: 1,
+  376: 2,
+  377: 2,
+  378: 2,
+  379: 1,
+  380: 2,
+  381: 1,
+  382: 2,
+  383: 2,
+  384: 3,
+  385: 2,
+  386: 2,
+  387: 1,
+  388: 2,
+  389: 3,
+  390: 4,
+  391: 3,
+  392: 2,
+  393: 2,
+  394: 2,
+  395: 1,
+  396: 2,
+  397: 2,
+  398: 3,
+  399: 2,
+  400: 3,
+  401: 2,
+  402: 3,
+  403: 2,
+  404: 1,
+  405: 2,
+  406: 2,
+  407: 2,
+  408: 2,
+  409: 2,
+  410: 2,
+  411: 1,
+  412: 2,
+  413: 2,
+  414: 3,
+  415: 2,
+  416: 3,
+  417: 3,
+  418: 3,
+  419: 2,
+  420: 2,
 };
 
 /* Questions rédigées à la main, une par fiche — les 3 leurres portent sur le
@@ -2209,6 +2361,80 @@ const QZ = {
   344: {q:'Qu’est-ce que le kata (型) ?', a:'La forme juste d’un geste, apprise par répétition', x:['Le grade dans les arts martiaux','Le duel codifié entre maîtres','L’improvisation maîtrisée']},
   345: {q:'Qu’est-ce que le ma (間) ?', a:'L’art de l’intervalle : le vide et le silence comme matière', x:['Le rythme effréné du kabuki','La symétrie parfaite des jardins','Le point d’équilibre du corps']},
   346: {q:'Que crie-t-on pour encourager quelqu’un ?', a:'« Ganbatte ! » — courage, donne tout', x:['« Banzai ! » — hourra','« Kanpai ! » — santé','« Yatta ! » — ça y est']},
+347: {q:'Que reçoivent gratuitement, depuis 2016, les visiteurs venus photographier les plaques d’égout décorées des municipalités ?', a:'Des « manhole cards » de collection', x:['Un tampon souvenir de la mairie','Une réduction dans les commerces voisins','Une réplique miniature de la plaque']},
+  348: {q:'Qu’a réussi Tama, la chatte nommée cheffe de gare de Kishi en 2007 ?', a:'Attirer assez de touristes pour sauver la ligne de la fermeture', x:['Obtenir la réouverture d’une gare désaffectée','Devenir la mascotte des Jeux olympiques de Tokyo','Faire classer sa gare au patrimoine national']},
+  349: {q:'Quel événement sportif Nagoya et la préfecture d’Aichi accueillent-elles du 19 septembre au 4 octobre 2026 ?', a:'Les Jeux asiatiques', x:['Les championnats du monde d’athlétisme','La Coupe du monde de rugby','Les Jeux olympiques d’hiver']},
+  350: {q:'Combien de visiteurs étrangers le Japon a-t-il accueillis en 2025, son record absolu ?', a:'42,7 millions, en hausse de 15,8 % sur un an', x:['31,9 millions, en hausse de 8 %','36,5 millions, en baisse de 2 %','50,2 millions, en hausse de 20 %']},
+  351: {q:'Qu’est-ce que le sobayu, servi à la fin d’un repas de soba ?', a:'L’eau de cuisson des nouilles, que l’on boit', x:['Un thé de sarrasin grillé','Un bouillon de bonite servi brûlant','Un alcool de riz offert par la maison']},
+  352: {q:'Par quel intermédiaire le curry (karē raisu) est-il arrivé au Japon ?', a:'Par la marine britannique, à l’ère Meiji', x:['Par des marchands indiens installés à Yokohama','Par les missionnaires portugais au XVIe siècle','Par les soldats américains après 1945']},
+  353: {q:'Que veut dire « 予約しています » (yoyaku shite imasu) ?', a:'J’ai une réservation', x:['Je voudrais réserver','Avez-vous de la place ?','J’annule ma réservation']},
+  354: {q:'Que veut dire « 辛いですか » (karai desu ka) ?', a:'C’est épicé ?', x:['C’est sucré ?','C’est chaud ?','C’est amer ?']},
+  355: {q:'Qu’est-ce qui a détruit les flottes d’invasion de Kubilai Khan en 1274 puis 1281 ?', a:'Des typhons, baptisés kamikaze — « vent divin »', x:['Les samouraïs massés sur les plages de Kyūshū','Des brûlots lancés de nuit sur les navires','Une épidémie qui a décimé les équipages']},
+  356: {q:'Avec combien de navires le commodore Perry a-t-il forcé l’ouverture des ports japonais en 1853 ?', a:'Quatre, dont deux à vapeur', x:['Deux, tous à voile','Sept, tous à vapeur','Une flotte d’une vingtaine de bâtiments']},
+  357: {q:'Quelle part des volcans actifs de la planète le Japon concentre-t-il ?', a:'Environ 7 %, soit 111 volcans actifs', x:['Environ 2 %, soit une trentaine de volcans','Environ 15 %, soit plus de 200 volcans','Environ 25 %, soit près de 400 volcans']},
+  358: {q:'Combien d’habitants compte l’agglomération du Grand Tokyo, record mondial ?', a:'Environ 37 millions', x:['Environ 14 millions','Environ 22 millions','Environ 51 millions']},
+  359: {q:'Quelle vitesse record le train maglev L0 a-t-il atteinte en 2015 sur la voie d’essai de Yamanashi ?', a:'603 km/h — record mondial sur rail', x:['443 km/h','515 km/h','575 km/h']},
+  360: {q:'Quel appareil reste incontournable dans les administrations et cliniques japonaises, malgré vingt ans de campagnes de numérisation ?', a:'Le fax (télécopieur)', x:['La machine à écrire','Le bipeur','Le télex']},
+  361: {q:'Quelle est la particularité historique du nihonium, l’élément 113 nommé en 2016 ?', a:'Premier élément du tableau périodique baptisé par des chercheurs asiatiques', x:['Premier élément découvert sans accélérateur de particules','Premier élément stable créé artificiellement','Premier élément nommé d’après un chercheur vivant']},
+  362: {q:'Que signifie « Subaru », le nom du grand télescope japonais installé au Mauna Kea ?', a:'L’amas des Pléiades', x:['L’étoile Polaire','La Voie lactée','La constellation d’Orion']},
+  363: {q:'Que désigne le terme kodokushi (孤独死) ?', a:'Des morts solitaires découvertes des semaines après le décès', x:['Des personnes recluses qui ne sortent plus de chez elles','Des morts par épuisement au travail','Des funérailles célébrées sans aucun proche']},
+  364: {q:'Pourquoi l’énorme dette publique japonaise reste-t-elle soutenable ?', a:'Elle est détenue en écrasante majorité par des créanciers japonais', x:['Elle est adossée aux immenses réserves d’or du pays','Elle est couverte par les excédents commerciaux','Elle a été en grande partie annulée par le FMI']},
+  365: {q:'Pourquoi les lutteurs de sumo mangent-ils le chanko-nabe en énormes quantités après un entraînement à jeun ?', a:'Pour maximiser la prise de masse', x:['Pour récupérer les sels minéraux perdus en sueur','Pour respecter un rituel shintō d’avant-tournoi','Pour tester la cuisine des apprentis lutteurs']},
+  366: {q:'Qu’est-ce qui distingue les clubs de la J.League, fondée en 1993, des équipes de baseball japonaises ?', a:'Ils sont ancrés dans leur ville plutôt que dans une entreprise', x:['Ils ne recrutent que des joueurs japonais','Ils appartiennent tous à la fédération nationale','Ils sont financés par des chaînes de télévision']},
+  367: {q:'Qu’est-ce que l’enka (演歌) ?', a:'Des ballades mélodramatiques prisées des générations âgées', x:['Des chants guerriers repris dans les stades','De la pop chantée par des groupes de lycéennes','Des percussions rituelles jouées dans les festivals']},
+  368: {q:'Qui écrit le répertoire de Hatsune Miku, l’idole virtuelle née en 2007 ?', a:'Des milliers d’amateurs, pas une maison de disques', x:['Une équipe interne de Crypton','Les grandes maisons de disques de Tokyo','Une intelligence artificielle générative']},
+  369: {q:'Quelle récompense Rashōmon d’Akira Kurosawa a-t-il remportée en 1951, révélant le cinéma japonais à l’Occident ?', a:'Le Lion d’or à Venise', x:['La Palme d’or à Cannes','L’Ours d’or à Berlin','L’Oscar du meilleur film']},
+  370: {q:'Quel film de Hirokazu Kore-eda a remporté la Palme d’or en 2018 ?', a:'Une affaire de famille', x:['Tel père, tel fils','Nobody Knows','Les Bonnes Étoiles']},
+  371: {q:'Que commande la coutume de l’omiyage (お土産) au retour d’un voyage ?', a:'Rapporter des gâteaux régionaux à partager avec collègues et famille', x:['Envoyer une carte postale à chaque proche','Offrir un objet artisanal au doyen de la famille','Faire un don au temple de son quartier']},
+  372: {q:'Sur les escalators, quelle différence entre Tokyo et Osaka ?', a:'À Tokyo on se tient à gauche, à Osaka à droite', x:['À Tokyo on se tient à droite, à Osaka à gauche','Aucune : on se tient à gauche partout au Japon','À Osaka, il est interdit de doubler']},
+  373: {q:'Quelle passion d’enfance de Satoshi Tajiri a inspiré Pokémon ?', a:'La chasse aux scarabées et l’échange d’insectes', x:['L’élevage des poissons rouges de festival','Les cartes de baseball à collectionner','Les combats de cerfs-volants entre quartiers']},
+  374: {q:'En quelle année la Famicom est-elle sortie au Japon, deux ans avant sa version occidentale rebaptisée NES ?', a:'1983', x:['1979','1985','1987']},
+  375: {q:'Qu’est-ce que l’umeshu (梅酒) ?', a:'Une liqueur de prunes vertes macérées dans l’alcool et le sucre', x:['Un saké pétillant aromatisé à la pêche','Une bière de riz brassée artisanalement','Un thé fermenté légèrement alcoolisé']},
+  376: {q:'Sur un distributeur japonais, qu’indique un liseré rouge sous une boisson ?', a:'La boisson est servie chaude', x:['La boisson est servie glacée','La boisson contient de l’alcool','La boisson est sans caféine']},
+  377: {q:'Quel musée se trouve juste à côté des dunes de Tottori ?', a:'Un musée de sculptures de sable, renouvelé chaque année', x:['Un musée du chameau et des caravanes','Un musée des verres et cristaux de silice','Un musée de la conquête du désert']},
+  378: {q:'Que permet le Shimanami Kaidō, entre Honshū et Shikoku ?', a:'Traverser 70 km à vélo d’île en île par des ponts suspendus', x:['Relier les deux îles en ferry de nuit','Suivre à pied un pèlerinage de 88 temples','Longer la côte en train panoramique']},
+  379: {q:'Comment repère-t-on les voitures réservées aux femmes dans les trains japonais ?', a:'Signalétique rose sur le quai, horaires affichés au sol', x:['Wagon toujours placé en tête de train','Hôtesse qui filtre l’accès aux portes','Vitres teintées et rideaux tirés']},
+  380: {q:'Que font les oshiya (押し屋), ces employés gantés de blanc des gares de Tokyo ?', a:'Ils compriment les voyageurs pour permettre la fermeture des portes', x:['Ils nettoient les rames à chaque terminus','Ils guident les voyageurs perdus vers le bon quai','Ils contrôlent les billets à l’entrée des quais']},
+  381: {q:'Devant des toilettes publiques, que signifient les kanji 女 et 男 ?', a:'Femme et homme', x:['Entrée et sortie','Poussez et tirez','Occupé et libre']},
+  382: {q:'Sur les boutons d’ascenseur japonais, que signifient 開 et 閉 ?', a:'Ouvrir et fermer', x:['Monter et descendre','Marche et arrêt','Entrée et sortie']},
+  383: {q:'Qu’ont organisé des temples bouddhistes quand Sony a cessé la maintenance des chiens robots Aibo ?', a:'Des funérailles pour les unités irréparables', x:['Une collecte pour rouvrir l’atelier de réparation','Des bénédictions pour les nouveaux modèles','Un pèlerinage annuel des propriétaires endeuillés']},
+384: {q:'Qui a conçu le premier hôtel capsule, ouvert en 1979 à Osaka ?', a:'Kishō Kurokawa, figure du mouvement métaboliste', x:['Kenzō Tange, l’architecte des JO de 1964','Tadao Andō, le maître du béton brut','Arata Isozaki, prix Pritzker 2019']},
+  385: {q:'Selon la légende, qu’auraient appris les moines-guerriers auprès des tengu (天狗) ?', a:'L’escrime — les tengu sont de redoutables maîtres d’armes', x:['La calligraphie des sutras','La médecine des plantes de montagne','L’art de la divination']},
+  386: {q:'Qu’arrive-t-il quand le zashiki-warashi (座敷童子) quitte la maison qu’il habitait ?', a:'La famille décline — c’est un yōkai qu’on souhaite garder', x:['La maison brûle dans l’année','Il revient hanter les lieux chaque nuit','Rien : son départ lève une malédiction']},
+  387: {q:'Dans quoi doit-on faire apposer un goshuin (御朱印), le sceau calligraphié des sanctuaires ?', a:'Dans un carnet dédié, le goshuinchō', x:['Dans n’importe quel carnet propre','Sur une planchette de bois vendue sur place','Sur un feuillet remis par le temple, à encadrer']},
+  388: {q:'Que signale un shimenawa (注連縄), la grosse corde de paille, autour d’un arbre ou d’un rocher ?', a:'Qu’il abrite un kami — l’espace est sacré', x:['Qu’il est maudit et ne doit pas être touché','Qu’il marque l’entrée d’un cimetière','Qu’il appartient au domaine impérial']},
+  389: {q:'Que raconte « La Sente étroite du Bout-du-Monde » (1689) de Bashō ?', a:'Son périple à pied dans le nord du Japon, entrecoupé de haïkus', x:['Sa traversée en bateau vers les îles du sud','Son pèlerinage aux 88 temples de Shikoku','Sa vie de reclus dans un ermitage de Kyōto']},
+  390: {q:'Qu’ont apporté au manga les autrices du Groupe de l’an 24, comme Moto Hagio et Keiko Takemiya ?', a:'Elles ont posé les bases du shōjo moderne : SF, psychologie, sexualité', x:['Elles ont inventé le gekiga pour adultes','Elles ont lancé les premiers magazines de shōnen sportif','Elles ont créé le premier manga publié en Occident']},
+  391: {q:'Quelle est la règle sur les photos dans les maid cafés d’Akihabara ?', a:'Strictement encadrées et payantes — lis la grille tarifaire', x:['Interdites en toute circonstance','Gratuites dès qu’on consomme','Libres, sauf envers les autres clients']},
+  392: {q:'À Kinosaki Onsen, qui fournit le yukata que l’on porte pour circuler de bain en bain ?', a:'L’auberge fournit la tenue', x:['Un loueur installé près de la gare','L’office du tourisme, contre caution','On achète le sien dans les boutiques de la rue principale']},
+  393: {q:'À quelle période tombe la Golden Week, la pire semaine pour visiter le Japon ?', a:'Fin avril-début mai : quatre jours fériés agglutinés', x:['Mi-août, autour d’Obon','Fin décembre-début janvier','La deuxième semaine d’octobre']},
+  394: {q:'Que sont les osechi (おせち) ?', a:'Les boîtes laquées du Nouvel An, préparées pour ne pas cuisiner début janvier', x:['Les plateaux de fête servis aux mariages','Les bentō spéciaux vendus dans les gares','Les offrandes déposées aux autels des ancêtres']},
+  395: {q:'Comment ferme-t-on correctement un kimono ou un yukata ?', a:'Pan gauche par-dessus le droit — l’inverse est réservé aux morts', x:['Pan droit par-dessus le gauche pour les hommes seulement','Gauche l’été, droite l’hiver, selon la saison','Peu importe le sens : seul l’obi compte']},
+  396: {q:'Pourquoi les chauffeurs de taxi et de bus japonais portent-ils des gants blancs ?', a:'L’uniforme signale le professionnalisme du service', x:['Un héritage des uniformes de l’armée impériale','Une règle d’hygiène votée après-guerre','Pour être visibles quand ils font signe aux clients']},
+  397: {q:'Combien de personnes manipulent chaque marionnette du bunraku (文楽) ?', a:'Trois, dont deux vêtues de noir', x:['Une seule, cachée sous la scène','Deux, dissimulées derrière un rideau','Quatre, une par membre']},
+  398: {q:'À partir de quoi fabrique-t-on le washi (和紙), le papier traditionnel ?', a:'D’écorce de mûrier', x:['De fibres de bambou','De paille de riz','De feuilles de chanvre']},
+  399: {q:'Quelle est la cause principale du kafunshō (花粉症), l’allergie nationale ?', a:'Le pollen des cryptomères plantés massivement après-guerre', x:['Le pollen des cerisiers en fleur','L’ambroisie importée d’Amérique','Les graminées des rizières']},
+  400: {q:'Quel est le reste à charge classique du patient dans l’assurance maladie japonaise ?', a:'30 %, avec un plafond mensuel qui protège des grosses dépenses', x:['10 %, quel que soit le soin','50 %, sauf pour les enfants','Rien : la gratuité est totale depuis 1961']},
+  401: {q:'Pourquoi les cerisiers Somei-Yoshino d’une même ville fleurissent-ils tous en même temps ?', a:'Reproduits par greffe, ce sont des clones génétiquement identiques', x:['Ils sont taillés pour synchroniser la floraison','Les municipalités plantent des arbres du même âge','On pulvérise une hormone au printemps']},
+  402: {q:'Où a-t-on retrouvé les dernières grues du Japon qui ont permis de sauver l’espèce ?', a:'Dans les marais de Kushiro, à Hokkaidō', x:['Dans les rizières de Niigata','Sur les plages de Kyūshū','Dans les zones humides au pied du mont Fuji']},
+  403: {q:'Quelle est la différence entre le shōji et le fusuma, les cloisons coulissantes ?', a:'Le shōji est translucide, le fusuma opaque', x:['Le fusuma laisse passer la lumière, pas le shōji','Le shōji est fixe, seul le fusuma coulisse','Le shōji est réservé aux temples, le fusuma aux maisons']},
+  404: {q:'Pourquoi étend-on les futons au balcon dès qu’il fait beau ?', a:'Contre l’humidité et les acariens', x:['Une tradition religieuse de purification','Pour libérer la pièce pendant le ménage du matin','Pour blanchir le tissu jauni par le tatami']},
+  405: {q:'Pendant le shūkatsu (就活), la chasse à l’emploi des étudiants, que vaut se distinguer visuellement ?', a:'C’est un handicap : costume noir identique pour tous', x:['C’est encouragé pour montrer sa créativité','C’est neutre : seuls les diplômes comptent','C’est exigé dans les grands groupes']},
+  406: {q:'Qu’impose la loi de 2019 sur les congés payés au Japon ?', a:'Les employeurs doivent imposer un minimum de jours de congé pris', x:['Une cinquième semaine de congés pour tous','Le paiement double des jours non pris','L’interdiction de contacter un salarié en vacances']},
+  407: {q:'Pourquoi tant d’écoles japonaises ont-elles leur propre piscine ?', a:'Héritage d’une politique de prévention des noyades', x:['Pour détecter les futurs nageurs olympiques','Une exigence des assurances scolaires','Pour rafraîchir les élèves faute de climatisation']},
+  408: {q:'Qu’est-ce que l’undōkai (運動会), préparé pendant des semaines dans les écoles ?', a:'La fête sportive annuelle : relais, pyramides humaines, parents en tribunes', x:['La journée de grand nettoyage de l’établissement','Le concours annuel de calligraphie','La cérémonie d’entrée des nouveaux élèves']},
+  409: {q:'Comment s’organise un gōkon (合コン) ?', a:'Deux amis réunissent autant d’hommes que de femmes autour d’une table d’izakaya', x:['Une agence apparie des célibataires par questionnaire','Des inconnus se retrouvent via une appli dédiée','Les parents présentent des candidats au mariage']},
+  410: {q:'Pourquoi tant de mariages japonais se déroulent-ils dans une chapelle de style chrétien ?', a:'Le rite se choisit pour l’esthétique et la photo, sans être croyant', x:['Le mariage shintō est réservé à la noblesse','Une conversion religieuse est exigée des couples','La loi ne reconnaît que les cérémonies chrétiennes']},
+  411: {q:'Quel taux de TVA s’applique à l’alimentaire à emporter au Japon ?', a:'8 %, contre 10 % en général', x:['10 %, comme tout le reste','5 %, un taux réduit spécial','0 % : l’alimentaire est exonéré']},
+  412: {q:'Pourquoi les achats détaxés « consommables » sont-ils remis scellés dans les magasins Tax-Free ?', a:'Ils ne doivent théoriquement pas être ouverts avant la sortie du territoire', x:['Pour garantir l’hygiène des produits','Pour éviter les vols dans les aéroports','Pour les protéger pendant le transport en soute']},
+  413: {q:'Que doit-on prouver pour immatriculer une voiture en ville au Japon (shako shōmei, 車庫証明) ?', a:'Que l’on dispose d’une place de stationnement', x:['Que l’on a passé un contrôle technique renforcé','Que l’on réside depuis plus d’un an à l’adresse','Que le véhicule ne dépasse pas une taille maximale']},
+  414: {q:'Dans le Toyota Production System, que peut faire un ouvrier qui repère un défaut ?', a:'Tout arrêter en tirant sur un cordon', x:['Le signaler par écrit au chef d’équipe en fin de poste','Coller une étiquette rouge sans arrêter la chaîne','Appeler la maintenance sans interrompre la production']},
+  415: {q:'Que signifie l’onomatopée japonaise « dokidoki », employée couramment à l’oral ?', a:'Le cœur qui bat', x:['Mourir de faim','Quelque chose de moelleux','La pluie fine qui tombe']},
+  416: {q:'En wasei-eigo (和製英語), le faux anglais local, que désigne « konsento » ?', a:'Une prise électrique', x:['Un formulaire de consentement','Un concert','Un consultant']},
+  417: {q:'Quelle part du territoire japonais représente Okinawa, qui accueille l’essentiel des bases américaines ?', a:'Moins de 1 %', x:['Environ 5 %','Environ 10 %','Près d’un quart']},
+  418: {q:'En 2016, comment l’âge du droit de vote a-t-il changé au Japon ?', a:'Il est passé de 20 à 18 ans', x:['Il est passé de 21 à 18 ans','Il est passé de 25 à 20 ans','Il est passé de 18 à 16 ans']},
+  419: {q:'Selon la pratique du nemawashi (根回し), à quoi sert vraiment une réunion ?', a:'À ratifier une décision déjà obtenue en privé auprès de chacun', x:['À trancher entre les options par un vote','À laisser le chef imposer son choix','À débattre librement jusqu’au consensus']},
+  420: {q:'D’où vient l’expression ichi-go ichi-e (一期一会), « une fois, une rencontre » ?', a:'De la cérémonie du thé', x:['Du théâtre nô','Du code d’honneur des samouraïs','De la poésie de cour de l’époque Heian']},
 };
 
 /* =========================================================================
@@ -2474,7 +2700,7 @@ function tplQzMenu(){
       <span aria-hidden="true" style="width:38px;height:38px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:9px;border:2.2px solid ${col};color:${col};font:900 19px 'Noto Sans JP';transform:rotate(${won ? '-4' : '0'}deg)${won ? `;background:${col}14` : ''}">${p.kanji}</span>
       <span style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left">
         <span style="font:800 12px 'Hanken Grotesk';color:${won ? '#141414' : '#3a372f'}">${esc(p.label)}</span>
-        <span style="font:600 10px 'Hanken Grotesk';color:#6d675c">${esc(p.desc)}</span>
+        <span style="font:600 11px 'Hanken Grotesk';color:#6d675c">${esc(p.desc)}</span>
       </span>
     </button>`;
   }).join('');
@@ -2503,9 +2729,9 @@ function tplQzMenu(){
     <div style="margin:0 16px;border-top:2.2px solid #141414"></div>
     <div style="margin:2.5px 16px 0;border-top:1px solid #141414"></div>
     <div style="flex:1;overflow-y:auto;box-sizing:border-box">
-      <p style="margin:0;padding:9px 18px 2px;font:800 10px 'Hanken Grotesk';letter-spacing:.24em;color:#6d675c;max-width:860px;margin:0 auto">PROGRAMMES</p>
+      <p style="margin:0;padding:9px 18px 2px;font:800 11px 'Hanken Grotesk';letter-spacing:.24em;color:#6d675c;max-width:860px;margin:0 auto">PROGRAMMES</p>
       <div class="hscroll" style="display:flex;gap:8px;overflow-x:auto;padding:7px 14px 4px;max-width:860px;margin:0 auto;box-sizing:border-box">${progRow}</div>
-      <p style="margin:0;padding:10px 18px 2px;font:800 10px 'Hanken Grotesk';letter-spacing:.24em;color:#6d675c;max-width:860px;margin:0 auto">CATÉGORIES — quatre niveaux par sceau : 75, 80, 90 puis 100 % (sans-faute)</p>
+      <p style="margin:0;padding:10px 18px 2px;font:800 11px 'Hanken Grotesk';letter-spacing:.24em;color:#6d675c;max-width:860px;margin:0 auto">CATÉGORIES — quatre niveaux par sceau : 75, 80, 90 puis 100 % (sans-faute)</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:8px 6px;align-content:start;padding:4px 12px 34px;max-width:860px;width:100%;margin:0 auto;box-sizing:border-box">${seals}</div>
     </div>
   </div>`;
@@ -2586,7 +2812,7 @@ function tplQzResult(){
     </div>
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px">
       <div style="position:relative;width:min(330px,84vw);border:1.6px solid #141414;box-shadow:inset 0 0 0 3.5px #f6f3ea,inset 0 0 0 4.6px #141414;padding:30px 22px 26px;display:flex;flex-direction:column;align-items:center;gap:13px;text-align:center;background:#faf8f1">
-        <span style="display:inline-flex;align-items:center;gap:9px;font:800 10px 'Hanken Grotesk';letter-spacing:.3em;color:#6d675c">検定試験 — ${esc(label).toUpperCase()}${fujiChip(q.rank, '#6d675c', '#c4bdae', '#faf8f1', `Examen niveau ${q.rank} sur 3`)}</span>
+        <span style="display:inline-flex;align-items:center;gap:9px;font:800 11px 'Hanken Grotesk';letter-spacing:.3em;color:#6d675c">検定試験 — ${esc(label).toUpperCase()}${fujiChip(q.rank, '#6d675c', '#c4bdae', '#faf8f1', `Examen niveau ${q.rank} sur 3`)}</span>
         <span aria-hidden="true" class="${q.newBadge ? 'qz-pop' : ''}" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:3px ${win ? 'solid' : 'dashed'} ${col};color:${col};font:900 44px 'Noto Sans JP';transform:rotate(-7deg)${win ? `;background:${col}10;box-shadow:inset 0 0 0 3px #faf8f1,inset 0 0 0 4px ${col}45` : ''}">${kanji}</span>
         <div class="tnum" style="font:900 38px 'Hanken Grotesk';color:#141414;line-height:1">${q.score}<span style="font-size:19px;color:#6d675c"> / ${n}</span></div>
         <span aria-label="${win ? 'Réussi' : 'Échoué'}" style="display:inline-block;font:900 21px 'Noto Sans JP';color:${win ? red : '#6d675c'};border:2.6px solid ${win ? red : '#8a8478'};border-radius:7px;padding:3px 13px;transform:rotate(-5deg);letter-spacing:.1em${win ? `;text-shadow:0 0 1px ${red}55` : ''}">${verdict}</span>
