@@ -947,7 +947,7 @@ function tlPanel(it){
       const dot = mine
         ? `width:15px;height:15px;border-radius:50%;background:#E60012;border:2.8px solid #fff;box-shadow:0 0 0 1.8px #E60012`
         : `width:${foc ? 13 : 11}px;height:${foc ? 13 : 11}px;border-radius:50%;background:#fff;border:${foc ? '3px solid #141414' : '2.4px solid #6d675c'}`;
-      rows += `<button type="button" data-tldot="${id}"${mine ? ' data-tlme="1" aria-current="true"' : ''}${foc ? ' data-focus="1"' : ''} aria-label="${tlYearTxt(y)} — ${esc(tlLabel(id))}" style="margin:0;padding:0;border:0;cursor:pointer;display:flex;align-items:center;width:100%;text-align:left;background:${foc ? '#fffef7' : 'transparent'};border-radius:10px">
+      rows += `<button type="button" data-tldot="${id}"${mine ? ' data-tlme="1" aria-current="true"' : ''}${foc ? ' data-focus="1"' : ''} aria-label="${tlYearTxt(y)} — ${esc(tlLabel(id))}" style="position:relative;margin:0;padding:0;border:0;cursor:pointer;display:flex;align-items:center;width:100%;text-align:left;background:${foc ? '#fffef7' : 'transparent'};border-radius:10px">
         <span class="tnum" style="flex:none;width:62px;text-align:right;font:800 12px 'Hanken Grotesk';color:${mine ? ink('#E60012') : '#57534a'}">${tlYearTxt(y)}</span>
         <span style="flex:none;width:24px;display:flex;align-items:center;justify-content:center"><span style="flex:none;${dot}"></span></span>
         <span style="padding:13px 10px 13px 8px;font:${foc || mine ? 700 : 600} 13px/1.45 'Hanken Grotesk';color:${foc || mine ? '#141414' : '#4d4941'}">${esc(tlLabel(id))}</span>
