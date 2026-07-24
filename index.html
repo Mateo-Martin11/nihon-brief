@@ -904,12 +904,6 @@ const TL = [[235,-13000],[298,500],[61,1008],[355,1274],[168,1600],[234,1657],[3
   [329,2025],[349,2026]];
 const TL_YEAR = Object.fromEntries(TL);
 
-function tlX(y){
-  if (y < 900)  return 6 + (y + 13000) / 13900 * 24;
-  if (y < 1850) return 30 + (y - 900) / 950 * 128;
-  return 158 + (y - 1850) / 180 * 208;
-}
-
 function tlBtn(it){
   if (TL_YEAR[it.id] === undefined) return '';
   const open = state.tlOpen === it.id;
@@ -919,47 +913,39 @@ function tlBtn(it){
 function tlLabel(id){
   const d = DATA.find(x => x.id === id);
   const t = d ? (d.title || d.romaji || d.jp || '') : '';
-  return t.length > 38 ? t.slice(0, 37) + '…' : t;
+  return t.length > 52 ? t.slice(0, 51) + '…' : t;
 }
 function tlYearTxt(y){ return y < 0 ? '−' + Math.abs(y).toLocaleString('fr-FR').replace(/ /g, ' ') : String(y); }
+
+/* Ères réelles du Japon : la frise apprend le découpage du temps en même
+   temps qu'elle situe l'événement. */
+const tlEra = y => y < 0 ? 'JŌMON' : y < 794 ? 'ANTIQUITÉ' : y < 1185 ? 'HEIAN' : y < 1603 ? 'L’ÂGE DES GUERRIERS' : y < 1868 ? 'EDO' : y < 1926 ? 'MEIJI · TAISHŌ' : y < 1989 ? 'SHŌWA' : y < 2019 ? 'HEISEI' : 'REIWA';
 
 function tlPanel(it){
   if (state.tlOpen !== it.id) return '';
   const focus = state.tlFocus ?? it.id;
   const sorted = TL.slice().sort((a, b) => a[1] - b[1]);
-  let lastX = -99, flip = false;
-  const dots = sorted.map(([id, y]) => {
-    const x = tlX(y);
-    flip = (x - lastX < 10) ? !flip : false;
-    lastX = x;
-    const cy = 84 + (flip ? 11 : 0);
+  const rail = "background:linear-gradient(#b7b0a0,#b7b0a0) center/2.2px 100% no-repeat";
+  let era = null, rows = '';
+  for (const [id, y] of sorted) {
+    const e = tlEra(y);
+    if (e !== era) {
+      era = e;
+      rows += `<div style="display:flex;align-items:stretch"><span style="flex:none;width:56px"></span><span style="flex:none;width:20px;${rail}"></span><span style="padding:11px 0 3px 10px;font:800 9.5px 'Hanken Grotesk';letter-spacing:.22em;color:#8a8478">${e}</span></div>`;
+    }
     const mine = id === it.id, foc = id === focus;
-    return `<g data-tldot="${id}" style="cursor:pointer"><circle cx="${x.toFixed(1)}" cy="${cy}" r="10" fill="transparent"/><circle cx="${x.toFixed(1)}" cy="${cy}" r="${foc ? 6 : 4.4}" fill="${mine ? '#E60012' : '#6d675c'}" stroke="${foc ? '#141414' : '#fff'}" stroke-width="${foc ? 2 : 1.4}"/></g>`;
-  }).join('');
-  const fx = tlX(TL_YEAR[focus]);
-  const name = esc(tlLabel(focus));
-  const pw = Math.min(320, name.length * 6.6 + 66);
-  const px = Math.max(4, Math.min(380 - pw - 4, fx - pw / 2));
-  const ticks = [1000, 1500, 1850, 1950, 2026].map(y =>
-    `<line x1="${tlX(y).toFixed(1)}" y1="78" x2="${tlX(y).toFixed(1)}" y2="90" stroke="#a89f8d" stroke-width="1.2"/><text x="${tlX(y).toFixed(1)}" y="112" text-anchor="middle" font-size="10.5" font-weight="800" fill="#6d675c" font-family="'Hanken Grotesk',sans-serif">${y}</text>`
-  ).join('');
-  return `<div role="region" aria-label="Frise chronologique" style="border-top:1px solid #eceae3;background:#f7f4ec;padding:12px 8px 10px">
-    <svg viewBox="0 0 380 120" role="img" aria-label="${name}, ${tlYearTxt(TL_YEAR[focus])} — frise du Japon" style="display:block;width:100%;max-width:520px;margin:0 auto">
-      <rect x="2" y="66" width="28" height="42" rx="4" fill="#141414" opacity=".04"/>
-      <rect x="30" y="66" width="128" height="42" rx="4" fill="#141414" opacity=".07"/>
-      <rect x="158" y="66" width="220" height="42" rx="4" fill="#E60012" opacity=".06"/>
-      <rect x="${px.toFixed(1)}" y="6" width="${pw}" height="38" rx="8" fill="#141414"/>
-      <text x="${(px + pw / 2).toFixed(1)}" y="21" text-anchor="middle" font-size="11.5" font-weight="700" fill="#fff" font-family="'Hanken Grotesk',sans-serif">${name}</text>
-      <text x="${(px + pw / 2).toFixed(1)}" y="37" text-anchor="middle" font-size="12" font-weight="900" fill="#ffb400" font-family="'Hanken Grotesk',sans-serif">${tlYearTxt(TL_YEAR[focus])}</text>
-      <line x1="${fx.toFixed(1)}" y1="44" x2="${fx.toFixed(1)}" y2="${(TL_YEAR[focus] === undefined ? 78 : 77).toFixed(1)}" stroke="#141414" stroke-width="1.3" stroke-dasharray="3 2.5"/>
-      <line x1="4" y1="84" x2="376" y2="84" stroke="#8a8478" stroke-width="1.8"/>
-      <line x1="24" y1="75" x2="31" y2="93" stroke="#f7f4ec" stroke-width="5"/>
-      <line x1="23" y1="76" x2="29" y2="92" stroke="#8a8478" stroke-width="1.2"/>
-      <line x1="27" y1="76" x2="33" y2="92" stroke="#8a8478" stroke-width="1.2"/>
-      ${ticks}
-      ${dots}
-    </svg>
-    <p style="margin:6px 0 0;text-align:center;font:600 10.5px 'Hanken Grotesk';color:#76736a">Tape un point pour explorer — le rouge, c'est cette fiche.</p>
+    const dot = mine
+      ? `width:13px;height:13px;border-radius:50%;background:#E60012;border:2.4px solid #fff;box-shadow:0 0 0 1.5px #E60012`
+      : `width:${foc ? 12 : 9}px;height:${foc ? 12 : 9}px;border-radius:50%;background:#fff;border:${foc ? '2.6px solid #141414' : '2px solid #8a8478'}`;
+    rows += `<button type="button" data-tldot="${id}"${mine ? ' data-tlme="1" aria-current="true"' : ''}${foc ? ' data-focus="1"' : ''} aria-label="${tlYearTxt(y)} — ${esc(tlLabel(id))}" style="cursor:pointer;display:flex;align-items:center;width:100%;text-align:left;background:${foc ? '#fffef8' : 'transparent'};border-radius:9px">
+      <span class="tnum" style="flex:none;width:56px;text-align:right;font:800 11px 'Hanken Grotesk';color:${mine ? ink('#E60012') : '#6d675c'}">${tlYearTxt(y)}</span>
+      <span style="flex:none;width:20px;align-self:stretch;display:flex;align-items:center;justify-content:center;${rail}"><span style="flex:none;${dot}"></span></span>
+      <span style="padding:12px 8px 12px 10px;font:${foc || mine ? 700 : 600} 12px/1.4 'Hanken Grotesk';color:${foc || mine ? '#141414' : '#57534a'}">${esc(tlLabel(id))}</span>
+    </button>`;
+  }
+  return `<div role="region" aria-label="Frise chronologique" style="border-top:1px solid #eceae3;background:#f7f4ec;padding:8px 6px 8px">
+    <div data-tlpanel style="max-height:330px;overflow-y:auto;overscroll-behavior:contain">${rows}</div>
+    <p style="margin:7px 0 0;text-align:center;font:600 10.5px 'Hanken Grotesk';color:#76736a">La ligne du temps — le terminus rouge, c'est cette fiche.</p>
   </div>`;
 }
 
@@ -1201,7 +1187,19 @@ function wire(){
     const qo = e.target.closest('[data-qopt-card]');
     if (qo && state.qCard && state.qCard.picked == null) { state.qCard.picked = Number(qo.dataset.qoptCard); return render(); }
     const tb = e.target.closest('[data-tl]');
-    if (tb) { const id = Number(tb.dataset.tl); state.tlOpen = state.tlOpen === id ? null : id; state.tlFocus = id; return render(); }
+    if (tb) {
+      const id = Number(tb.dataset.tl);
+      const opening = state.tlOpen !== id;
+      state.tlOpen = opening ? id : null;
+      state.tlFocus = id;
+      render();
+      if (opening) requestAnimationFrame(() => {
+        const pn = document.querySelector('[data-tlpanel]');
+        const me = pn && pn.querySelector('[data-tlme]');
+        if (pn && me) pn.scrollTop = Math.max(0, me.offsetTop - pn.clientHeight / 2);
+      });
+      return;
+    }
     const td = e.target.closest('[data-tldot]');
     if (td) { state.tlFocus = Number(td.dataset.tldot); return render(); }
     const mp = e.target.closest('[data-map]');
